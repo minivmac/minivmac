@@ -76,6 +76,7 @@ LOCALPROC WriteAppSpecificCNFUDOSGoptions(void)
 	switch (cur_mdl) {
 		case gbk_mdl_Twig43:
 			WriteDestFileLn("#define kRomCheckSum1 0x27F4E04B");
+                        WriteDestFileLn("#define kRomCheckSum2 0x27DFC393");
 			break;
 		case gbk_mdl_Twiggy:
 			WriteDestFileLn("#define kRomCheckSum1 0x2884371D");
