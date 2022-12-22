@@ -388,7 +388,9 @@ LOCALPROC WriteBashGccMakeFile(void)
 				if (gbk_targfam_mach == gbo_targfam) {
 					WriteCStrToDestFile(
 						" -Wl,-framework,Cocoa,-framework,SDL2");
-				} else {
+				} else  if (gbk_targ_wx64 == cur_targ) {
+                                        WriteCStrToDestFile(" -lSDL2 -Wl,-subsystem,windows");
+                                } else {
 					WriteCStrToDestFile(" -lSDL2");
 				}
 			} else if (gbk_apifam_nds == gbo_apifam) {
