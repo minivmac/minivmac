@@ -1,0 +1,9 @@
+bld
+cfg
+*.rom
+*.ROM
+setup_t
+setup.sh
+Makefile
+minivmac
+

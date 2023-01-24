@@ -344,46 +344,47 @@ LOCALPROC WrtOptOfficialBin(void)
 /* option: target */
 
 enum {
-	gbk_targ_m68k, /* MacOS 68K */
-	gbk_targ_mfpu, /* MacOS 68K with FPU */
-	gbk_targ_mppc, /* MacOS OS 9 for PowerPC */
-	gbk_targ_mach, /* MacOS X Macho */
-	gbk_targ_imch, /* MacOS X Intel */
-	gbk_targ_mc64, /* MacOS X for x64 */
-	gbk_targ_mcar, /* MacOS X for Apple Silicon */
-	gbk_targ_wx86, /* Windows */
-	gbk_targ_wx64, /* Windows on x64 */
-	gbk_targ_lx86, /* X11 for linux on x86 */
-	gbk_targ_lppc, /* X11 for linux on PowerPC */
-	gbk_targ_lx64, /* X11 for linux on x64 */
-	gbk_targ_larm, /* X11 for linux on arm (debian armel) */
-	gbk_targ_lspr, /* X11 for linux on SPARC */
-	gbk_targ_fbsd, /* FreeBSD for x86 */
-	gbk_targ_fb64, /* FreeBSD for x64 */
-	gbk_targ_fbpc, /* FreeBSD for PowerPC */
-	gbk_targ_obsd, /* OpenBSD for x86 */
-	gbk_targ_ob64, /* OpenBSD for x64 */
-	gbk_targ_nbsd, /* NetBSD for x86 */
-	gbk_targ_nb64, /* NetBSD for x64 */
-	gbk_targ_dbsd, /* Dragonfly BSD for x86 */
-	gbk_targ_db64, /* Dragonfly BSD for x64 */
-	gbk_targ_slrs, /* Solaris SPARC */
-	gbk_targ_sl86, /* Solaris Intel */
-	gbk_targ_oind, /* OpenIndiana for x86 */
-	gbk_targ_oi64, /* OpenIndiana for x64 */
-	gbk_targ_minx, /* Minix on x86 */
-	gbk_targ_wcar, /* Windows CE on ARM */
-	gbk_targ_wc86, /* Windows CE (emulator) on x86 */
-	gbk_targ_carb, /* MacOS Carbon lib for OS 9 and OS X */
-	gbk_targ_mx11, /* X11 for MacOS X PowerPC */
-	gbk_targ_mi11, /* X11 for MacOS X Intel */
-	gbk_targ_mx64, /* X11 for MacOS X x64 */
-	gbk_targ_cygw, /* Cygwin/X */
-	gbk_targ_xgen, /* Generic X11 */
-	gbk_targ_ndsa, /* Nintendo DS on ARM  */
-	gbk_targ_irix, /* Silicon Graphics's IRIX on MIPS */
-	gbk_targ_port, /* Port (don't generate platform/compiler files) */
-	kNumTargets
+        gbk_targ_m68k, /* MacOS 68K */
+        gbk_targ_mfpu, /* MacOS 68K with FPU */
+        gbk_targ_mppc, /* MacOS OS 9 for PowerPC */
+        gbk_targ_mach, /* MacOS X Macho */
+        gbk_targ_imch, /* MacOS X Intel */
+        gbk_targ_mc64, /* MacOS X for x64 */
+        gbk_targ_mcar, /* MacOS X for Apple Silicon */
+        gbk_targ_wx86, /* Windows */
+        gbk_targ_wx64, /* Windows on x64 */
+        gbk_targ_lx86, /* X11 for linux on x86 */
+        gbk_targ_lppc, /* X11 for linux on PowerPC */
+        gbk_targ_lx64, /* X11 for linux on x64 */
+        gbk_targ_larm, /* X11 for linux on arm (debian armel) */
+        gbk_targ_lspr, /* X11 for linux on SPARC */
+        gbk_targ_hx64, /* Haiku x64 */
+        gbk_targ_fbsd, /* FreeBSD for x86 */
+        gbk_targ_fb64, /* FreeBSD for x64 */
+        gbk_targ_fbpc, /* FreeBSD for PowerPC */
+        gbk_targ_obsd, /* OpenBSD for x86 */
+        gbk_targ_ob64, /* OpenBSD for x64 */
+        gbk_targ_nbsd, /* NetBSD for x86 */
+        gbk_targ_nb64, /* NetBSD for x64 */
+        gbk_targ_dbsd, /* Dragonfly BSD for x86 */
+        gbk_targ_db64, /* Dragonfly BSD for x64 */
+        gbk_targ_slrs, /* Solaris SPARC */
+        gbk_targ_sl86, /* Solaris Intel */
+        gbk_targ_oind, /* OpenIndiana for x86 */
+        gbk_targ_oi64, /* OpenIndiana for x64 */
+        gbk_targ_minx, /* Minix on x86 */
+        gbk_targ_wcar, /* Windows CE on ARM */
+        gbk_targ_wc86, /* Windows CE (emulator) on x86 */
+        gbk_targ_carb, /* MacOS Carbon lib for OS 9 and OS X */
+        gbk_targ_mx11, /* X11 for MacOS X PowerPC */
+        gbk_targ_mi11, /* X11 for MacOS X Intel */
+        gbk_targ_mx64, /* X11 for MacOS X x64 */
+        gbk_targ_cygw, /* Cygwin/X */
+        gbk_targ_xgen, /* Generic X11 */
+        gbk_targ_ndsa, /* Nintendo DS on ARM  */
+        gbk_targ_irix, /* Silicon Graphics's IRIX on MIPS */
+        gbk_targ_port, /* Port (don't generate platform/compiler files) */
+        kNumTargets
 };
 
 LOCALVAR int cur_targ;
@@ -493,6 +494,9 @@ LOCALFUNC char * GetTargetName(int i)
 		case gbk_targ_lx64:
 			s = "lx64";
 			break;
+                case gbk_targ_hx64:
+                        s = "hx64";
+                        break;
 		case gbk_targ_wx64:
 			s = "wx64";
 			break;
@@ -554,6 +558,7 @@ LOCALFUNC tMyErr ChooseTarg(void)
 				case gbk_targ_larm:
 				case gbk_targ_mc64:
 				case gbk_targ_lx64:
+                                case gbk_targ_hx64:
 				case gbk_targ_wx64:
 				case gbk_targ_fb64:
 				case gbk_targ_nb64:
@@ -984,6 +989,7 @@ LOCALFUNC int dfo_cpufam(void)
 			break;
 		case gbk_targ_mc64:
 		case gbk_targ_lx64:
+                case gbk_targ_hx64:
 		case gbk_targ_wx64:
 		case gbk_targ_fb64:
 		case gbk_targ_ob64:
@@ -1025,26 +1031,27 @@ LOCALPROC WrtOptCPUFam(void)
 /* derived option: target family */
 
 enum {
-	gbk_targfam_cmac, /* Classic Mac */
-	gbk_targfam_mach, /* OS X Macho */
-	gbk_targfam_mswn, /* Microsoft Windows */
-	gbk_targfam_linx, /* Linux */
-	gbk_targfam_fbsd, /* FreeBSD */
-	gbk_targfam_obsd, /* OpenBSD */
-	gbk_targfam_nbsd, /* NetBSD */
-	gbk_targfam_dbsd, /* Dragonfly BSD */
-	gbk_targfam_slrs, /* Solaris */
-	gbk_targfam_oind, /* OpenIndiana */
-	gbk_targfam_irix, /* Silicon Graphics's IRIX */
-	gbk_targfam_minx, /* Minix */
-	gbk_targfam_wnce, /* Windows CE */
-	gbk_targfam_carb, /* MacOS Carbon lib for OS 9 and OS X */
-	gbk_targfam_mx11, /* X11 for MacOS X */
-	gbk_targfam_cygw, /* Cygwin/X */
-	gbk_targfam_xgen, /* Generic X11 */
-	gbk_targfam_lnds, /* libnds for Nintendo DS */
-	gbk_targfam_port, /* don't generate platform/compiler files */
-	kNumTargFamilies
+        gbk_targfam_cmac, /* Classic Mac */
+        gbk_targfam_mach, /* OS X Macho */
+        gbk_targfam_mswn, /* Microsoft Windows */
+        gbk_targfam_linx, /* Linux */
+        gbk_targfam_haik, /* Haiku */
+        gbk_targfam_fbsd, /* FreeBSD */
+        gbk_targfam_obsd, /* OpenBSD */
+        gbk_targfam_nbsd, /* NetBSD */
+        gbk_targfam_dbsd, /* Dragonfly BSD */
+        gbk_targfam_slrs, /* Solaris */
+        gbk_targfam_oind, /* OpenIndiana */
+        gbk_targfam_irix, /* Silicon Graphics's IRIX */
+        gbk_targfam_minx, /* Minix */
+        gbk_targfam_wnce, /* Windows CE */
+        gbk_targfam_carb, /* MacOS Carbon lib for OS 9 and OS X */
+        gbk_targfam_mx11, /* X11 for MacOS X */
+        gbk_targfam_cygw, /* Cygwin/X */
+        gbk_targfam_xgen, /* Generic X11 */
+        gbk_targfam_lnds, /* libnds for Nintendo DS */
+        gbk_targfam_port, /* don't generate platform/compiler files */
+        kNumTargFamilies
 };
 
 LOCALVAR int gbo_targfam;
@@ -1067,6 +1074,9 @@ LOCALFUNC tMyErr ChooseTargFam(void)
 		case gbk_targ_wx64:
 			gbo_targfam = gbk_targfam_mswn;
 			break;
+                case gbk_targ_hx64:
+                        gbo_targfam = gbk_targfam_haik;
+                        break;
 		case gbk_targ_lx86:
 		case gbk_targ_lppc:
 		case gbk_targ_lx64:
@@ -1247,57 +1257,58 @@ LOCALFUNC int dfo_ide(void)
 				v = gbk_ide_mvc;
 				break;
 		}
-	} else {
-		switch (gbo_targfam) {
-			case gbk_targfam_cmac:
-			case gbk_targfam_carb:
-				v = gbk_ide_mpw;
-				break;
-			case gbk_targfam_mach:
-			case gbk_targfam_mx11:
-				v = gbk_ide_xcd;
-				break;
-			case gbk_targfam_mswn:
-			case gbk_targfam_wnce:
-				v = gbk_ide_msv;
-				break;
-			case gbk_targfam_linx:
-			case gbk_targfam_slrs:
-			case gbk_targfam_fbsd:
-			case gbk_targfam_obsd:
-			case gbk_targfam_nbsd:
-			case gbk_targfam_dbsd:
-			case gbk_targfam_oind:
-			case gbk_targfam_minx:
-			case gbk_targfam_irix:
-				v = gbk_ide_bgc;
-				break;
-			case gbk_targfam_cygw:
-				v = gbk_ide_cyg;
-				break;
-			case gbk_targfam_lnds:
-				v = gbk_ide_dkp;
-				break;
-			case gbk_targfam_port:
-				v = gbk_ide_prt;
-				break;
-			case gbk_targfam_xgen:
-			default:
-				v = gbk_ide_ccc;
-				break;
-		}
-	}
+} else {
+        switch (gbo_targfam) {
+                case gbk_targfam_cmac:
+                case gbk_targfam_carb:
+                        v = gbk_ide_mpw;
+                        break;
+                case gbk_targfam_mach:
+                case gbk_targfam_mx11:
+                        v = gbk_ide_xcd;
+                        break;
+                case gbk_targfam_mswn:
+                case gbk_targfam_wnce:
+                        v = gbk_ide_msv;
+                        break;
+                case gbk_targfam_haik:
+                case gbk_targfam_linx:
+                case gbk_targfam_slrs:
+                case gbk_targfam_fbsd:
+                case gbk_targfam_obsd:
+                case gbk_targfam_nbsd:
+                case gbk_targfam_dbsd:
+                case gbk_targfam_oind:
+                case gbk_targfam_minx:
+                case gbk_targfam_irix:
+                        v = gbk_ide_bgc;
+                        break;
+                case gbk_targfam_cygw:
+                        v = gbk_ide_cyg;
+                        break;
+                case gbk_targfam_lnds:
+                        v = gbk_ide_dkp;
+                        break;
+                case gbk_targfam_port:
+                        v = gbk_ide_prt;
+                        break;
+                case gbk_targfam_xgen:
+                default:
+                        v = gbk_ide_ccc;
+                        break;
+                }
+        }
 
-	return v;
+        return v;
 }
 
 LOCALFUNC tMyErr ChooseIde(void)
 {
-	if (kListOptionAuto == cur_ide) {
+        if (kListOptionAuto == cur_ide) {
 		cur_ide = dfo_ide();
 	}
 
-	return kMyErr_noErr;
+        return kMyErr_noErr;
 }
 
 LOCALPROC WrtOptIdeOption(void)
@@ -1558,6 +1569,9 @@ LOCALFUNC int dfo_apifam(void)
 				v = gbk_apifam_osx;
 			}
 			break;
+                case gbk_targfam_haik:
+                        v = gbk_apifam_sd2;
+                        break;
 		case gbk_targfam_mswn:
 		case gbk_targfam_wnce:
 			v = gbk_apifam_win;

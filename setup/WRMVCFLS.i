@@ -310,6 +310,9 @@ LOCALPROC WriteMVCMakeFile(void)
 		case gbk_targ_lx86:
 			WriteDestFileLn("my_prefix = i386-pc-linux-");
 			break;
+                case gbk_targ_hx64:
+                        WriteDestFileLn("my_prefix = x86_64-unknown-haiku-");
+                        break;
 		case gbk_targ_lx64:
 			WriteDestFileLn("my_prefix = x86_64-linux-gnu-");
 			break;
