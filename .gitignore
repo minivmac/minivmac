@@ -6,4 +6,7 @@ setup_t
 setup.sh
 Makefile
 minivmac
+minivmac.app
+minivmac.xcodeproj
+build
 

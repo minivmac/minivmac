@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Example of how to build the SDL2 version of Mini vMac
+# Example of how to build the SDL2 version of Mini vMac on Linux
 #
 
 # we need to build the setup tool first
