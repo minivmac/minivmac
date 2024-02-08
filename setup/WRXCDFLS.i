@@ -1037,11 +1037,8 @@ LOCALPROC WriteAPBXCDBuildSettings(void)
 						"ARCHS = \"$(ARCHS_STANDARD_32_BIT)\";");
 				*/
 			} else
-			if (gbk_cpufam_x64 == gbo_cpufam) {
-				WriteDestFileLn("ARCHS = x86_64;");
-			} else
-			if (gbk_cpufam_a64 == gbo_cpufam) {
-				WriteDestFileLn("ARCHS = arm64;");
+			if (gbk_cpufam_x64 == gbo_cpufam || gbk_cpufam_a64 == gbo_cpufam) {
+				WriteDestFileLn("ARCHS = \"$(ARCHS_STANDARD)\";");
 			} else
 			{
 				WriteDestFileLn("ARCHS = ppc;");
@@ -1142,8 +1139,8 @@ LOCALPROC WriteAPBXCDBuildSettings(void)
 		if (gbk_cpufam_ppc == gbo_cpufam) {
 			WriteDestFileLn("MACOSX_DEPLOYMENT_TARGET = 10.1;");
 		} else
-		if (gbk_cpufam_a64 == gbo_cpufam) {
-			WriteDestFileLn("MACOSX_DEPLOYMENT_TARGET = 10.15;");
+		if (gbk_cpufam_a64 == gbo_cpufam || gbk_cpufam_x64 == gbo_cpufam) {
+			WriteDestFileLn("MACOSX_DEPLOYMENT_TARGET = \"$(MACOSX_RECOMMENDED_DEPLOYMENT_TARGET)\";");
 		} else
 		{
 			if (ide_vers >= 12100) {
