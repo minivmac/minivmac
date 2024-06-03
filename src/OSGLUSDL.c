@@ -3423,6 +3423,9 @@ LOCALPROC UniCodeStr2MacRoman(char *s, char *r)
 	char *p = s;
 	char *q = r;
 
+	/* suppress compiler warning about 'err' being unused */
+	UNUSED(err);
+
 label_retry:
 	if (0 == (t = *p++)) {
 		err = mnvm_noErr;

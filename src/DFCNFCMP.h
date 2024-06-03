@@ -65,6 +65,8 @@ typedef si5r simr;
 #define my_osglu_call
 #endif
 
+#define UNUSED(exp) (void)(exp)
+
 #define LOCALVAR static
 #define GLOBALVAR
 #define EXPORTVAR(t, v) extern t v;
