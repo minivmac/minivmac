@@ -20,6 +20,8 @@
 #define SONYEMDV_H
 #endif
 
+#include <string.h>
+
 EXPORTPROC ExtnDisk_Access(CPTR p);
 EXPORTPROC ExtnSony_Access(CPTR p);
 
