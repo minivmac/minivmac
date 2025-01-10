@@ -396,6 +396,8 @@ LOCALPROC WriteBashGccMakeFile(void)
 			} else if (gbk_apifam_nds == gbo_apifam) {
 				WriteCStrToDestFile(" -L$(DEVKITPRO)/libnds/lib");
 				WriteCStrToDestFile(" -lfilesystem -lfat -lnds9");
+			} else if (gbk_apifam_dos == gbo_apifam) {
+				/* The DOS API doesn't need any external libraries */
 			} else {
 				if (gbk_targfam_slrs == gbo_targfam) {
 					WriteCStrToDestFile(" -lposix4");

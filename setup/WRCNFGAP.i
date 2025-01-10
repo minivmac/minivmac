@@ -342,6 +342,17 @@ LOCALPROC WriteCommonCNFUIOSGContents(void)
 		}
 #endif
 
+	} else if (gbk_apifam_dos == gbo_apifam) {
+		WriteDestFileLn("#include <stdio.h>");
+		WriteDestFileLn("#include <stdlib.h>");
+		WriteDestFileLn("#include <string.h>");
+		WriteDestFileLn("#include <time.h>");
+		WriteDestFileLn("#include <sys/time.h>");
+		WriteDestFileLn("#include <sys/times.h>");
+		WriteDestFileLn("#include <dpmi.h>");
+		WriteDestFileLn("#include <pc.h>");
+		WriteDestFileLn("#include <go32.h>");
+		WriteDestFileLn("#include <sys/farptr.h>");
 	} else if (gbk_apifam_nds == gbo_apifam) {
 		WriteDestFileLn("#define ARM9 1");
 
@@ -509,7 +520,7 @@ LOCALPROC WriteCommonCNFUIOSGContents(void)
 		WriteDestFileLn("#define EnableShellLinks 0");
 		WriteDestFileLn("#define EnableDragDrop 0");
 		WriteDestFileLn("#define UseTimerThread 0");
-	} else if (gbk_targfam_lnds == gbo_targfam) {
+	} else if (gbk_targfam_lnds == gbo_targfam || gbk_targfam_mdos == gbo_targfam) {
 		WriteDestFileLn("#define EnableDragDrop 0");
 	} else {
 		WriteDestFileLn("#define EnableDragDrop 1");

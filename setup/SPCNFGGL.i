@@ -95,7 +95,8 @@ LOCALPROC WriteAppSpecificCNFUDALLoptions(void)
 		1 /* ((! WantMinExtn) || WantActvCode || WantDemoMsg) */
 			&& (gbk_apifam_gtk != gbo_apifam)
 			&& (gbk_apifam_sdl != gbo_apifam)
-			&& (gbk_apifam_nds != gbo_apifam));
+			&& (gbk_apifam_nds != gbo_apifam)
+			&& (gbk_apifam_dos != gbo_apifam));
 
 	WriteDestFileLn("#define EnableAutoSlow 1");
 	WriteCompCondBool("EmLocalTalk", WantLocalTalk);
