@@ -138,6 +138,7 @@ static void DoAllSrcFiles(tDoOneCFile p)
 		|| (gbk_apifam_mac == gbo_apifam)
 		|| (gbk_apifam_cco == gbo_apifam)
 		|| (gbk_apifam_xwn == gbo_apifam)
+		|| (gbk_apifam_dos == gbo_apifam)
 		|| (gbk_apifam_sdl == gbo_apifam)
 		|| (gbk_apifam_sd2 == gbo_apifam);
 	blnr WantSCRNTRNS = WantSCRNMAPR && (cur_ScrnDpth != 0);
@@ -193,6 +194,7 @@ static void DoAllSrcFiles(tDoOneCFile p)
 	p("CONTROLM", kDepDirCSrc, kCSrcFlgmNoSource, nullpr);
 	p("PBUFSTDC", kDepDirCSrc,
 		CSrcFlagsUseHdrIf((gbk_apifam_xwn == gbo_apifam)
+			|| (gbk_apifam_dos == gbo_apifam)
 			|| (gbk_apifam_sd2 == gbo_apifam)
 			|| (gbk_apifam_sdl == gbo_apifam)
 			),
@@ -226,6 +228,10 @@ static void DoAllSrcFiles(tDoOneCFile p)
 	p("OSGLUXWN", kDepDirCSrc,
 		kCSrcFlgmUseAPI
 			| CSrcFlagsUseSrcIf(gbk_apifam_xwn == gbo_apifam),
+		DoOSGLUdepends);
+	p("OSGLUDOS", kDepDirCSrc,
+		kCSrcFlgmUseAPI
+			| CSrcFlagsUseSrcIf(gbk_apifam_dos == gbo_apifam),
 		DoOSGLUdepends);
 	p("OSGLUNDS", kDepDirCSrc,
 		kCSrcFlgmUseAPI

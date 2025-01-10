@@ -1079,7 +1079,11 @@ LOCALPROC WriteCompileCExec(void)
 		case gbk_ide_bgc:
 		case gbk_ide_mvc:
 		case gbk_ide_cyg:
-			WriteCStrToDestFile("gcc");
+                        if (gbk_targfam_mdos  == gbo_targfam) {
+				WriteCStrToDestFile("i586-pc-msdosdjgpp-gcc");
+                        } else {
+				WriteCStrToDestFile("gcc");
+                        }
 			break;
 		case gbk_ide_xcd:
 			if (ide_vers >= 12100) {

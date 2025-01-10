@@ -381,6 +381,7 @@ enum {
         gbk_targ_mx64, /* X11 for MacOS X x64 */
         gbk_targ_cygw, /* Cygwin/X */
         gbk_targ_xgen, /* Generic X11 */
+        gbk_targ_mdos, /* MS-DOS */
         gbk_targ_ndsa, /* Nintendo DS on ARM  */
         gbk_targ_irix, /* Silicon Graphics's IRIX on MIPS */
         gbk_targ_port, /* Port (don't generate platform/compiler files) */
@@ -511,6 +512,9 @@ LOCALFUNC char * GetTargetName(int i)
 			break;
 		case gbk_targ_xgen:
 			s = "xgen";
+			break;
+		case gbk_targ_mdos:
+			s = "mdos";
 			break;
 		case gbk_targ_ndsa:
 			s = "ndsa";
@@ -975,6 +979,7 @@ LOCALFUNC int dfo_cpufam(void)
 		case gbk_targ_minx:
 		case gbk_targ_imch:
 		case gbk_targ_mi11:
+		case gbk_targ_mdos:
 		case gbk_targ_cygw:
 			v = gbk_cpufam_x86;
 			break;
@@ -1049,6 +1054,7 @@ enum {
         gbk_targfam_mx11, /* X11 for MacOS X */
         gbk_targfam_cygw, /* Cygwin/X */
         gbk_targfam_xgen, /* Generic X11 */
+        gbk_targfam_mdos, /* MS-DOS */
         gbk_targfam_lnds, /* libnds for Nintendo DS */
         gbk_targfam_port, /* don't generate platform/compiler files */
         kNumTargFamilies
@@ -1136,10 +1142,13 @@ LOCALFUNC tMyErr ChooseTargFam(void)
 		case gbk_targ_port:
 			gbo_targfam = gbk_targfam_port;
 			break;
+		case gbk_targ_mdos:
+			gbo_targfam = gbk_targfam_mdos;
+			break;
 		case gbk_targ_xgen:
 		default:
 			gbo_targfam = gbk_targfam_xgen;
-			break;
+			break;	
 	}
 
 	return kMyErr_noErr;
@@ -1280,6 +1289,7 @@ LOCALFUNC int dfo_ide(void)
                 case gbk_targfam_dbsd:
                 case gbk_targfam_oind:
                 case gbk_targfam_minx:
+                case gbk_targfam_mdos:
                 case gbk_targfam_irix:
                         v = gbk_ide_bgc;
                         break;
@@ -1485,6 +1495,7 @@ enum {
 	gbk_apifam_osx,
 	gbk_apifam_win,
 	gbk_apifam_xwn,
+	gbk_apifam_dos,
 	gbk_apifam_nds,
 	gbk_apifam_gtk,
 	gbk_apifam_sdl,
@@ -1519,6 +1530,9 @@ LOCALFUNC char * GetAPIFamName(int i)
 			break;
 		case gbk_apifam_xwn:
 			s = "xwn";
+			break;
+		case gbk_apifam_dos:
+			s = "dos";
 			break;
 		case gbk_apifam_nds:
 			s = "nds";
@@ -1589,6 +1603,9 @@ LOCALFUNC int dfo_apifam(void)
 		case gbk_targfam_cygw:
 		case gbk_targfam_xgen:
 			v = gbk_apifam_xwn;
+			break;
+		case gbk_targfam_mdos:
+			v = gbk_apifam_dos;
 			break;
 		case gbk_targfam_port:
 			v = gbk_apifam_prt;
