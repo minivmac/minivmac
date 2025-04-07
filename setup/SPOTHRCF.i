@@ -35,6 +35,16 @@ LOCALPROC WriteAppCNFUIPICcontents(void)
 		WriteConfigurationWarning();
 	--DestFileIndent;
 	WriteDestFileLn("*/");
+	switch (gbo_apifam) {
+		case gbk_apifam_dos:
+			WriteBlankLineToDestFile();
+			WriteDefineUimr("VESAHeight", 480);
+			WriteDefineUimr("VESAWidth", 640);
+			WriteDefineUimr("VESAMode", 0x101);
+			WriteDefineUimr("MouseSenX", 50);
+			WriteDefineUimr("MouseSenY", 50);
+			break;
+	}
 }
 
 
@@ -83,6 +93,9 @@ LOCALPROC WriteAppCNFUIOSGContents(void)
 				break;
 			case gbk_apifam_xwn:
 				s = "XWN";
+				break;
+			case gbk_apifam_dos:
+				s = "DOS";
 				break;
 			case gbk_apifam_nds:
 				s = "NDS";
@@ -812,7 +825,8 @@ LOCALPROC WriteAppCNFUDPICcontents(void)
 	WriteCompCondBool("IncludeExtnHostTextClipExchange",
 		(! WantMinExtn) && (gbk_apifam_gtk != gbo_apifam)
 		&& (gbk_apifam_sdl != gbo_apifam)
-		&& (gbk_apifam_nds != gbo_apifam));
+		&& (gbk_apifam_nds != gbo_apifam)
+		&& (gbk_apifam_dos != gbo_apifam));
 
 	WriteBlankLineToDestFile();
 
