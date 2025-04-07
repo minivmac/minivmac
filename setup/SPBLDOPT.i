@@ -1882,6 +1882,8 @@ enum {
 	gbk_msz_4M,
 	gbk_msz_5M,
 	gbk_msz_8M,
+	gbk_msz_16M,
+	gbk_msz_32M,
 	kNumMemSizs
 };
 
@@ -1922,6 +1924,12 @@ LOCALFUNC char * GetMemSizName(int i)
 			break;
 		case gbk_msz_8M:
 			s = "8M";
+			break;
+		case gbk_msz_16M:
+			s = "16M";
+			break;
+		case gbk_msz_32M:
+			s = "32M";
 			break;
 		default:
 			s = "(unknown Memory Size)";
@@ -2001,6 +2009,8 @@ LOCALVAR uimr RAMb_Size;
 #define ln2_msz_2M 21
 #define ln2_msz_4M 22
 #define ln2_msz_8M 23
+#define ln2_msz_16M 24
+#define ln2_msz_32M 25
 
 LOCALFUNC tMyErr ChooseMemBankSizes(void)
 {
@@ -2073,6 +2083,14 @@ LOCALFUNC tMyErr ChooseMemBankSizes(void)
 			if (cur_msz == gbk_msz_8M) {
 				RAMa_Size = ln2_msz_4M;
 				RAMb_Size = ln2_msz_4M;
+			} else
+			if (cur_msz == gbk_msz_16M) {
+				RAMa_Size = ln2_msz_8M;
+				RAMb_Size = ln2_msz_8M;
+			} else 
+			if (cur_msz == gbk_msz_32M) {
+				RAMa_Size = ln2_msz_16M;
+				RAMb_Size = ln2_msz_16M;
 			} else
 			{
 				/* unsupported */
