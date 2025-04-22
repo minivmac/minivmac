@@ -1,15 +1,12 @@
-bld
-cfg
-*.rom
-*.ROM
-setup_t
-setup.sh
-Makefile
-minivmac
-minivmac.app
-minivmac.xcodeproj
-build
-*.exe
-SRC
-DISKS
+/bld
+/cfg
+/setup_t
+/setup.sh
+/Makefile
+/minivmac
+/minivmac.app
+/minivmac.xcodeproj
+/build
+/*.exe
+/*.ROM
 
