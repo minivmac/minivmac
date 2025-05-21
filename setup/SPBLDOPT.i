@@ -24,6 +24,7 @@ enum {
 	gbk_mdl_Twiggy,
 	gbk_mdl_128K,
 	gbk_mdl_512Ke,
+	gbk_mdl_Kanji,
 	gbk_mdl_Plus,
 	gbk_mdl_SE,
 	gbk_mdl_SEFDHD,
@@ -59,6 +60,9 @@ LOCALFUNC char * GetModelName(int i)
 			break;
 		case gbk_mdl_512Ke:
 			s = "512Ke";
+			break;
+		case gbk_mdl_Kanji:
+			s = "Kanji";
 			break;
 		case gbk_mdl_Plus:
 			s = "Plus";
@@ -1961,6 +1965,7 @@ LOCALFUNC int dfo_msz(void)
 		case gbk_mdl_IIx:
 			v = gbk_msz_8M;
 			break;
+		case gbk_mdl_Kanji:
 		case gbk_mdl_Plus:
 		case gbk_mdl_SE:
 		case gbk_mdl_SEFDHD:
@@ -2033,6 +2038,7 @@ LOCALFUNC tMyErr ChooseMemBankSizes(void)
 				/* unsupported */
 			}
 			break;
+		case gbk_mdl_Kanji:
 		case gbk_mdl_Plus:
 		case gbk_mdl_SE:
 		case gbk_mdl_SEFDHD:
@@ -3234,6 +3240,7 @@ LOCALFUNC uimr dfo_RomSize(void)
 		case gbk_mdl_Plus:
 			v = ln2_msz_128K; /* 128 KB */
 			break;
+		case gbk_mdl_Kanji:
 		case gbk_mdl_SE:
 		case gbk_mdl_SEFDHD:
 		case gbk_mdl_PB100:
