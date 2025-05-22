@@ -25,13 +25,14 @@
 #define kEmMd_Twiggy      1
 #define kEmMd_128K        2
 #define kEmMd_512Ke       3
-#define kEmMd_Plus        4
-#define kEmMd_SE          5
-#define kEmMd_SEFDHD      6
-#define kEmMd_Classic     7
-#define kEmMd_PB100       8
-#define kEmMd_II          9
-#define kEmMd_IIx        10
+#define kEmMd_Kanji       4
+#define kEmMd_Plus        5
+#define kEmMd_SE          6
+#define kEmMd_SEFDHD      7
+#define kEmMd_Classic     8
+#define kEmMd_PB100       9
+#define kEmMd_II         10
+#define kEmMd_IIx        11
 
 #define RAMSafetyMarginFudge 4
 

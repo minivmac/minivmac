@@ -36,6 +36,9 @@ LOCALPROC WriteAppSpecificCNFUDOSGoptions(void)
 		case gbk_mdl_128K:
 			WriteCStrToDestFile("Mac128K.ROM");
 			break;
+		case gbk_mdl_Kanji:
+			WriteCStrToDestFile("MacPlusKanji.ROM");
+			break;
 		case gbk_mdl_SE:
 			WriteCStrToDestFile("MacSE.ROM");
 			break;
@@ -67,6 +70,8 @@ LOCALPROC WriteAppSpecificCNFUDOSGoptions(void)
 	WriteCStrToDestFile("#define kCheckSumRom_Size ");
 	if (gbk_mdl_Classic == cur_mdl) {
 		WriteCStrToDestFile("0x040000"); /* 256 KB */
+	} else if (gbk_mdl_Kanji == cur_mdl) {
+		WriteCStrToDestFile("0x020000"); /* first 128 KB */
 	} else {
 		WriteCStrToDestFile("0x");
 		WriteHexLongToOutput(1UL << cur_RomSize);
@@ -84,6 +89,10 @@ LOCALPROC WriteAppSpecificCNFUDOSGoptions(void)
 		case gbk_mdl_128K:
 			WriteDestFileLn("#define kRomCheckSum1 0x28BA61CE");
 			WriteDestFileLn("#define kRomCheckSum2 0x28BA4E50");
+			break;
+		case gbk_mdl_Kanji:
+			WriteDestFileLn("#define kRomCheckSum1 0x4D1EEAE1");
+				/* first 128K is same as Mac Plus ROM v 2 */
 			break;
 		case gbk_mdl_SE:
 			WriteDestFileLn("#define kRomCheckSum1 0xB2E362A8");
