@@ -1500,7 +1500,6 @@ enum {
 	gbk_apifam_gtk,
 	gbk_apifam_sdl,
 	gbk_apifam_sd2,
-	gbk_apifam_sd3,
 	gbk_apifam_cco,
 	gbk_apifam_prt,
 	kNumAPIFamilies
@@ -1546,9 +1545,6 @@ LOCALFUNC char * GetAPIFamName(int i)
 			break;
 		case gbk_apifam_sd2:
 			s = "sd2";
-			break;
-		case gbk_apifam_sd3:
-			s = "sd3";
 			break;
 		case gbk_apifam_cco:
 			s = "cco";

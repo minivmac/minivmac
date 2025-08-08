@@ -105,7 +105,6 @@ LOCALPROC WriteAppCNFUIOSGContents(void)
 				break;
 			case gbk_apifam_sdl:
 			case gbk_apifam_sd2:
-			case gbk_apifam_sd3:
 				s = "SDL";
 				break;
 			case gbk_apifam_cco:
