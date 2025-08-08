@@ -1193,10 +1193,7 @@ LOCALPROC WriteCompileC(MyProc psrc, MyProc pobj,
 						WriteCStrToDestFile(" -I/usr/local/include/"
 							" -D_GNU_SOURCE=1 -D_THREAD_SAFE");
 					}
-				} else if (
-					gbk_apifam_sd2 == gbo_apifam
-					|| gbk_apifam_sd3 == gbo_apifam
-				) {
+				} else if (gbk_apifam_sd2 == gbo_apifam) {
 					if (gbk_targfam_mach == gbo_targfam) {
 						WriteCStrToDestFile(
 							" -D_GNU_SOURCE=1 -D_THREAD_SAFE");

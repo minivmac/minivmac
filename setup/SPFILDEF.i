@@ -140,8 +140,7 @@ static void DoAllSrcFiles(tDoOneCFile p)
 		|| (gbk_apifam_xwn == gbo_apifam)
 		|| (gbk_apifam_dos == gbo_apifam)
 		|| (gbk_apifam_sdl == gbo_apifam)
-		|| (gbk_apifam_sd2 == gbo_apifam)
-		|| (gbk_apifam_sd3 == gbo_apifam);
+		|| (gbk_apifam_sd2 == gbo_apifam);
 	blnr WantSCRNTRNS = WantSCRNMAPR && (cur_ScrnDpth != 0);
 
 	p("CNFUIOSG", kDepDirCnfg, kCSrcFlgmNoSource, nullpr);
@@ -196,7 +195,6 @@ static void DoAllSrcFiles(tDoOneCFile p)
 	p("PBUFSTDC", kDepDirCSrc,
 		CSrcFlagsUseHdrIf((gbk_apifam_xwn == gbo_apifam)
 			|| (gbk_apifam_dos == gbo_apifam)
-			|| (gbk_apifam_sd3 == gbo_apifam)
 			|| (gbk_apifam_sd2 == gbo_apifam)
 			|| (gbk_apifam_sdl == gbo_apifam)
 			),
@@ -246,7 +244,6 @@ static void DoAllSrcFiles(tDoOneCFile p)
 	p("OSGLUSDL", kDepDirCSrc,
 		kCSrcFlgmUseAPI
 			| CSrcFlagsUseSrcIf((gbk_apifam_sdl == gbo_apifam)
-				|| (gbk_apifam_sd3 == gbo_apifam)
 				|| (gbk_apifam_sd2 == gbo_apifam)),
 		DoOSGLUdepends);
 	p("OSGLUCCO", kDepDirCSrc,

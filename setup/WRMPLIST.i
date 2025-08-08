@@ -267,10 +267,6 @@ LOCALPROC WriteMyInfoPListContents(void)
 			WritePListKeyString("SDL_FILESYSTEM_BASE_DIR_TYPE",
 				"parent");
 		}
-		if (gbk_apifam_sd3 == gbo_apifam) {
-			WritePListKeyString("SDL_FILESYSTEM_BASE_DIR_TYPE",
-				"parent");
-		}
 
 	WritePListEndDict();
 }
