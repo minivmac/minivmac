@@ -15,7 +15,7 @@
 */
 
 /*
-	Operating System GLUe for SDL (1.2 and 2.0) library
+	Operating System GLUe for SDL (1.2, 2.0 and 3.x) library
 
 	All operating system dependent code for the
 	SDL Library should go here.
@@ -64,7 +64,7 @@ GLOBALOSGLUPROC MyMoveBytes(anyp srcPtr, anyp destPtr, si5b byteCount)
 #endif
 
 #ifndef CanGetAppPath
-#if 2 == SDL_MAJOR_VERSION
+#if SDL_MAJOR_VERSION >= 2
 #define CanGetAppPath 1
 #else
 #define CanGetAppPath 0
@@ -83,6 +83,10 @@ LOCALVAR char *pref_dir = NULL;
 #define MyPathSep '\\'
 #else
 #define MyPathSep '/'
+#endif
+
+#if SDL_MAJOR_VERSION >= 3
+LOCALVAR SDL_AudioStream *stream = NULL;
 #endif
 
 LOCALFUNC tMacErr ChildPath(char *x, char *y, char **r)
@@ -462,7 +466,7 @@ LOCALFUNC tMacErr LoadMacRomFrom(char *path)
 	return err;
 }
 
-#if 2 == SDL_MAJOR_VERSION
+#if SDL_MAJOR_VERSION >= 2
 	/* otherwise no drag and drop to make use of this */
 LOCALFUNC blnr Sony_Insert1a(char *drivepath, blnr silentfail)
 {
@@ -617,7 +621,7 @@ LOCALFUNC blnr LoadMacRom(void)
 
 /* --- video out --- */
 
-#if MayFullScreen && (2 == SDL_MAJOR_VERSION)
+#if MayFullScreen && (SDL_MAJOR_VERSION >= 2)
 LOCALVAR int hOffset;
 LOCALVAR int vOffset;
 #endif
@@ -648,11 +652,17 @@ LOCALVAR blnr CurSpeedStopped = trueblnr;
 #if 1 == SDL_MAJOR_VERSION
 LOCALVAR SDL_Surface *my_surface = nullpr;
 #define my_format (my_surface->format)
-#elif 2 == SDL_MAJOR_VERSION
+#elif SDL_MAJOR_VERSION >= 2
 LOCALVAR SDL_Window *my_main_wind = NULL;
 LOCALVAR SDL_Renderer *my_renderer = NULL;
 LOCALVAR SDL_Texture *my_texture = NULL;
-LOCALVAR SDL_PixelFormat *my_format = NULL;
+LOCALVAR
+#if SDL_MAJOR_VERSION >= 3
+const SDL_PixelFormatDetails
+#else
+SDL_PixelFormat
+#endif
+*my_format = NULL;
 #endif
 
 LOCALVAR ui3p ScalingBuff = nullpr;
@@ -814,9 +824,13 @@ LOCALPROC HaveChangedScreenBuff(ui4r top, ui4r left,
 	void *pixels;
 	int pitch;
 
-#if 2 == SDL_MAJOR_VERSION
-	SDL_Rect src_rect;
-	SDL_Rect dst_rect;
+#if SDL_MAJOR_VERSION >= 3
+	SDL_FRect
+#else
+	SDL_Rect
+#endif
+	src_rect, dst_rect;
+#if SDL_MAJOR_VERSION >= 2
 	int XDest;
 	int YDest;
 	int DestWidth;
@@ -880,7 +894,7 @@ LOCALPROC HaveChangedScreenBuff(ui4r top, ui4r left,
 	}
 #endif
 
-#endif /* 2 == SDL_MAJOR_VERSION */
+#endif /* SDL_MAJOR_VERSION >= 2 */
 
 	top2 = top;
 	left2 = left;
@@ -905,15 +919,26 @@ LOCALPROC HaveChangedScreenBuff(ui4r top, ui4r left,
 	pixels = my_surface->pixels;
 	pitch = my_surface->pitch;
 
-#elif 2 == SDL_MAJOR_VERSION
-	if (0 != SDL_LockTexture(my_texture, NULL, &pixels, &pitch)) {
+#elif SDL_MAJOR_VERSION >= 2
+	if (
+#if SDL_MAJOR_VERSION >= 3
+		!
+#else
+		0 !=
+#endif
+		SDL_LockTexture(my_texture, NULL, &pixels, &pitch)
+	) {
 		return;
 	}
 #endif
 
 	{
 
+#if SDL_MAJOR_VERSION >= 3
+	int bpp = my_format->bytes_per_pixel;
+#else
 	int bpp = my_format->BytesPerPixel;
+#endif
 	ui5r ExpectedPitch = vMacScreenWidth * bpp;
 
 #if EnableMagnify && ! UseSDLscaling
@@ -927,6 +952,9 @@ LOCALPROC HaveChangedScreenBuff(ui4r top, ui4r left,
 #if vMacScreenDepth < 4
 		for (i = 0; i < CLUT_size; ++i) {
 			CLUT_pixel[i] = SDL_MapRGB(my_format,
+#if SDL_MAJOR_VERSION >= 3
+				NULL,
+#endif
 				CLUT_reds[i] >> 8,
 				CLUT_greens[i] >> 8,
 				CLUT_blues[i] >> 8);
@@ -935,9 +963,21 @@ LOCALPROC HaveChangedScreenBuff(ui4r top, ui4r left,
 	} else
 #endif
 	{
-		BWLUT_pixel[1] = SDL_MapRGB(my_format, 0, 0, 0);
+		BWLUT_pixel[1] = SDL_MapRGB(
+			my_format,
+#if SDL_MAJOR_VERSION >= 3
+			NULL,
+#endif
+			0, 0, 0
+		);
 			/* black */
-		BWLUT_pixel[0] = SDL_MapRGB(my_format, 255, 255, 255);
+		BWLUT_pixel[0] = SDL_MapRGB(
+			my_format,
+#if SDL_MAJOR_VERSION >= 3
+			NULL,
+#endif
+			255, 255, 255
+		);
 			/* white */
 	}
 
@@ -1164,7 +1204,7 @@ LOCALPROC HaveChangedScreenBuff(ui4r top, ui4r left,
 
 	SDL_UpdateRect(my_surface, left2, top2,
 		right2 - left2, bottom2 - top2);
-#elif 2 == SDL_MAJOR_VERSION
+#elif SDL_MAJOR_VERSION >= 2
 	SDL_UnlockTexture(my_texture);
 
 	src_rect.x = left2;
@@ -1178,14 +1218,20 @@ LOCALPROC HaveChangedScreenBuff(ui4r top, ui4r left,
 	dst_rect.h = DestHeight;
 
 	/* SDL_RenderClear(my_renderer); */
-	SDL_RenderCopy(my_renderer, my_texture, &src_rect, &dst_rect);
+#if SDL_MAJOR_VERSION >= 3
+	SDL_RenderTexture(
+#else
+	SDL_RenderCopy(
+#endif
+		my_renderer, my_texture, &src_rect, &dst_rect
+	);
 	SDL_RenderPresent(my_renderer);
 
 #if MayFullScreen
 label_exit:
 	;
 #endif
-#endif /* 2 == SDL_MAJOR_VERSION */
+#endif /* SDL_MAJOR_VERSION >= 2 */
 #endif /* 0 != SDL_MAJOR_VERSION */
 }
 
@@ -1219,9 +1265,11 @@ LOCALPROC ForceShowCursor(void)
 {
 	if (HaveCursorHidden) {
 		HaveCursorHidden = falseblnr;
-#if 0 != SDL_MAJOR_VERSION
+#if SDL_MAJOR_VERSION >= 3
+		SDL_ShowCursor();
+#elif SDL_MAJOR_VERSION != 0
 		(void) SDL_ShowCursor(SDL_ENABLE);
-#endif /* 0 != SDL_MAJOR_VERSION */
+#endif
 	}
 }
 
@@ -1278,7 +1326,7 @@ LOCALFUNC blnr MyMoveMouse(si4b h, si4b v)
 	}
 #endif
 
-#if 2 == SDL_MAJOR_VERSION
+#if SDL_MAJOR_VERSION >= 2
 #if VarFullScreen
 	if (UseFullScreen)
 #endif
@@ -1288,11 +1336,11 @@ LOCALFUNC blnr MyMoveMouse(si4b h, si4b v)
 		v += vOffset;
 	}
 #endif
-#endif /* 2 == SDL_MAJOR_VERSION */
+#endif /* SDL_MAJOR_VERSION >= 2 */
 
 #if 1 == SDL_MAJOR_VERSION
 	SDL_WarpMouse(h, v);
-#elif 2 == SDL_MAJOR_VERSION
+#elif SDL_MAJOR_VERSION >= 2
 	SDL_WarpMouseInWindow(my_main_wind, h, v);
 #endif
 
@@ -1306,7 +1354,7 @@ LOCALPROC MousePositionNotify(int NewMousePosh, int NewMousePosv)
 {
 	blnr ShouldHaveCursorHidden = trueblnr;
 
-#if 2 == SDL_MAJOR_VERSION
+#if SDL_MAJOR_VERSION >= 2
 #if VarFullScreen
 	if (UseFullScreen)
 #endif
@@ -1316,7 +1364,7 @@ LOCALPROC MousePositionNotify(int NewMousePosh, int NewMousePosv)
 		NewMousePosv -= vOffset;
 	}
 #endif
-#endif /* 2 == SDL_MAJOR_VERSION */
+#endif /* SDL_MAJOR_VERSION >= 2 */
 
 #if EnableMagnify
 	if (UseMagnify) {
@@ -1409,8 +1457,12 @@ LOCALPROC CheckMouseState(void)
 		this doesn't work as desired, doesn't get mouse movements
 		when outside of our window.
 	*/
-	int x;
-	int y;
+#if SDL_MAJOR_VERSION >= 3
+	float
+#else
+	int
+#endif
+	x, y;
 
 	(void) SDL_GetMouseState(&x, &y);
 	MousePositionNotify(x, y);
@@ -1577,7 +1629,7 @@ LOCALFUNC ui3r SDLKey2MacKeyCode(SDLKey i)
 
 	return v;
 }
-#elif 2 == SDL_MAJOR_VERSION
+#elif SDL_MAJOR_VERSION >= 2
 LOCALFUNC ui3r SDLScan2MacKeyCode(SDL_Scancode i)
 {
 	ui3r v = MKC_None;
@@ -1735,8 +1787,16 @@ LOCALPROC DoKeyCode(SDL_keysym *r, blnr down)
 		Keyboard_UpdateKeyMap2(v, down);
 	}
 }
-#elif 2 == SDL_MAJOR_VERSION
-LOCALPROC DoKeyCode(SDL_Keysym *r, blnr down)
+#elif SDL_MAJOR_VERSION >= 2
+LOCALPROC DoKeyCode(
+#if SDL_MAJOR_VERSION >= 3
+	SDL_KeyboardEvent
+#else
+	SDL_Keysym
+#endif
+	*r,
+	blnr down
+)
 {
 	ui3r v = SDLScan2MacKeyCode(r->scancode);
 	if (MKC_None != v) {
@@ -2271,6 +2331,19 @@ label_retry:
 
 	datp->lastv = v1;
 }
+#if SDL_MAJOR_VERSION >= 3
+static void SDLCALL sdl3_audio_callback(void *udata, SDL_AudioStream *stream, int addAmount, int amount) {
+	/* https://github.com/libsdl-org/sdl/blob/main/docs/README-migration.md#sdl_audioh */
+	if (addAmount > 0) {
+		Uint8 *data = SDL_stack_alloc(Uint8, addAmount);
+		if (data) {
+			my_audio_callback(udata, data, addAmount);
+			SDL_PutAudioStreamData(stream, data, addAmount);
+			SDL_stack_free(data);
+		}
+	}
+}
+#endif
 #endif /* 0 != SDL_MAJOR_VERSION */
 
 LOCALVAR MySoundR cur_audio;
@@ -2319,7 +2392,13 @@ label_retry:
 		}
 
 #if 0 != SDL_MAJOR_VERSION
+#if SDL_MAJOR_VERSION >= 3
+		SDL_PauseAudioDevice(
+			SDL_GetAudioStreamDevice(stream)
+		);
+#else
 		SDL_PauseAudio(1);
+#endif
 #endif
 	}
 
@@ -2337,7 +2416,13 @@ LOCALPROC MySound_Start(void)
 		cur_audio.wantplaying = trueblnr;
 
 #if 0 != SDL_MAJOR_VERSION
+#if SDL_MAJOR_VERSION >= 3
+		SDL_ResumeAudioDevice(
+			SDL_GetAudioStreamDevice(stream)
+		);
+#else
 		SDL_PauseAudio(0);
+#endif
 #endif
 	}
 }
@@ -2346,7 +2431,11 @@ LOCALPROC MySound_UnInit(void)
 {
 	if (HaveSoundOut) {
 #if 0 != SDL_MAJOR_VERSION
+#if SDL_MAJOR_VERSION >= 3
+		SDL_DestroyAudioStream(stream);
+#else
 		SDL_CloseAudio();
+#endif
 #endif
 	}
 }
@@ -2373,22 +2462,47 @@ LOCALFUNC blnr MySound_Init(void)
 
 #if 0 != SDL_MAJOR_VERSION
 	desired.freq = SOUND_SAMPLERATE;
-
 #if 3 == kLn2SoundSampSz
-	desired.format = AUDIO_U8;
+	desired.format = 
+#if SDL_MAJOR_VERSION >= 3
+	SDL_AUDIO_U8;
+#else
+	AUDIO_U8;
+#endif
 #elif 4 == kLn2SoundSampSz
-	desired.format = AUDIO_S16SYS;
+	desired.format =
+#if SDL_MAJOR_VERSION >= 3
+	SDL_AUDIO_S16;
+#else
+	AUDIO_S16SYS;
+#endif
 #else
 #error "unsupported audio format"
 #endif
 
 	desired.channels = 1;
+#if SDL_MAJOR_VERSION >= 3
+	stream = SDL_OpenAudioDeviceStream(
+		SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
+		&desired,
+		(SDL_AudioStreamCallback)sdl3_audio_callback,
+		(void *)&cur_audio
+	);
+#else
 	desired.samples = 1024;
 	desired.callback = my_audio_callback;
 	desired.userdata = (void *)&cur_audio;
+#endif
+	
 
 	/* Open the audio device */
-	if (SDL_OpenAudio(&desired, NULL) < 0) {
+	if (
+#if SDL_MAJOR_VERSION >= 3
+		stream == NULL
+#else
+		SDL_OpenAudio(&desired, NULL) < 0
+#endif
+	) {
 		fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
 	} else {
 		HaveSoundOut = trueblnr;
@@ -2401,7 +2515,6 @@ LOCALFUNC blnr MySound_Init(void)
 			*/
 	}
 #endif /* 0 != SDL_MAJOR_VERSION */
-
 	return trueblnr; /* keep going, even if no sound */
 }
 
@@ -2446,7 +2559,7 @@ LOCALPROC CheckSavedMacMsg(void)
 		NativeStrFromCStr(briefMsg0, SavedBriefMsg);
 		NativeStrFromCStr(longMsg0, SavedLongMsg);
 
-#if 2 == SDL_MAJOR_VERSION
+#if SDL_MAJOR_VERSION >= 2
 		if (0 != SDL_ShowSimpleMessageBox(
 			SDL_MESSAGEBOX_ERROR,
 			SavedBriefMsg,
@@ -3554,7 +3667,13 @@ LOCALVAR blnr CaughtMouse = falseblnr;
 LOCALPROC HandleTheEvent(SDL_Event *event)
 {
 	switch (event->type) {
-		case SDL_QUIT:
+		case
+#if SDL_MAJOR_VERSION >= 3
+		SDL_EVENT_QUIT
+#else	
+		SDL_QUIT
+#endif
+		:
 			RequestMacOff = trueblnr;
 			break;
 #if 1 == SDL_MAJOR_VERSION
@@ -3574,25 +3693,12 @@ LOCALPROC HandleTheEvent(SDL_Event *event)
 			}
 			break;
 #endif /* 1 == SDL_MAJOR_VERSION */
-#if 2 == SDL_MAJOR_VERSION
-		case SDL_WINDOWEVENT:
-			switch (event->window.event) {
-				case SDL_WINDOWEVENT_FOCUS_GAINED:
-					gTrueBackgroundFlag = 0;
-					break;
-				case SDL_WINDOWEVENT_FOCUS_LOST:
-					gTrueBackgroundFlag = 1;
-					break;
-				case SDL_WINDOWEVENT_ENTER:
-					CaughtMouse = 1;
-					break;
-				case SDL_WINDOWEVENT_LEAVE:
-					CaughtMouse = 0;
-					break;
-			}
-			break;
-#endif /* 2 == SDL_MAJOR_VERSION */
+#endif /* SDL_MAJOR_VERSION >= 2 */
+#if SDL_MAJOR_VERSION >= 3
+		case SDL_EVENT_MOUSE_MOTION:
+#else
 		case SDL_MOUSEMOTION:
+#endif
 #if EnableFSMouseMotion && ! HaveWorkingWarp
 			if (HaveMouseMotion) {
 				MousePositionNotifyRelative(
@@ -3604,7 +3710,11 @@ LOCALPROC HandleTheEvent(SDL_Event *event)
 					event->motion.x, event->motion.y);
 			}
 			break;
+#if SDL_MAJOR_VERSION >= 3
+		case SDL_EVENT_MOUSE_BUTTON_DOWN:
+#else
 		case SDL_MOUSEBUTTONDOWN:
+#endif
 			/* any mouse button, we don't care which */
 #if EnableFSMouseMotion && ! HaveWorkingWarp
 			if (HaveMouseMotion) {
@@ -3617,7 +3727,11 @@ LOCALPROC HandleTheEvent(SDL_Event *event)
 			}
 			MyMouseButtonSet(trueblnr);
 			break;
+#if SDL_MAJOR_VERSION >= 3
+		case SDL_EVENT_MOUSE_BUTTON_UP:
+#else
 		case SDL_MOUSEBUTTONUP:
+#endif
 #if EnableFSMouseMotion && ! HaveWorkingWarp
 			if (HaveMouseMotion) {
 				/* ignore position */
@@ -3629,14 +3743,28 @@ LOCALPROC HandleTheEvent(SDL_Event *event)
 			}
 			MyMouseButtonSet(falseblnr);
 			break;
+#if SDL_MAJOR_VERSION >= 3
+		case SDL_EVENT_KEY_DOWN:
+			DoKeyCode(&event->key, trueblnr);
+#else
 		case SDL_KEYDOWN:
 			DoKeyCode(&event->key.keysym, trueblnr);
+#endif
 			break;
+#if SDL_MAJOR_VERSION >= 3
+		case SDL_EVENT_KEY_UP:
+			DoKeyCode(&event->key, falseblnr);
+#else
 		case SDL_KEYUP:
 			DoKeyCode(&event->key.keysym, falseblnr);
+#endif
 			break;
-#if 2 == SDL_MAJOR_VERSION
+#if SDL_MAJOR_VERSION >= 2
+#if SDL_MAJOR_VERSION >= 3
+		case SDL_EVENT_MOUSE_WHEEL:
+#else
 		case SDL_MOUSEWHEEL:
+#endif
 			if (event->wheel.x < 0) {
 				Keyboard_UpdateKeyMap2(MKC_Left, trueblnr);
 				Keyboard_UpdateKeyMap2(MKC_Left, falseblnr);
@@ -3652,16 +3780,68 @@ LOCALPROC HandleTheEvent(SDL_Event *event)
 				Keyboard_UpdateKeyMap2(MKC_Up, falseblnr);
 			}
 			break;
+#if SDL_MAJOR_VERSION >= 3
+		case SDL_EVENT_DROP_FILE:
+#else
 		case SDL_DROPFILE:
+#endif
 			{
-				char *s = event->drop.file;
+				char *s = (char *)event->drop.
+#if SDL_MAJOR_VERSION >=3
+				data;
+#else
+				file;
+#endif
 
 				(void) Sony_Insert1a(s, falseblnr);
 				SDL_RaiseWindow(my_main_wind);
-				SDL_free(s);
 			}
 			break;
-#endif /* 2 == SDL_MAJOR_VERSION */
+#endif /* SDL_MAJOR_VERSION >= 2 */
+#if SDL_MAJOR_VERSION <= 2
+		case SDL_WINDOWEVENT:
+			switch (event->window.event) {
+#endif
+				case
+#if SDL_MAJOR_VERSION >= 3
+				SDL_EVENT_WINDOW_FOCUS_GAINED
+#else
+				SDL_WINDOWEVENT_FOCUS_GAINED
+#endif
+				:
+					gTrueBackgroundFlag = 0;
+					break;
+				case
+#if SDL_MAJOR_VERSION >= 3
+				SDL_EVENT_WINDOW_FOCUS_LOST
+#else
+				SDL_WINDOWEVENT_FOCUS_LOST
+#endif
+				:
+					gTrueBackgroundFlag = 1;
+					break;
+				case
+#if SDL_MAJOR_VERSION >= 3
+				SDL_EVENT_WINDOW_MOUSE_ENTER
+#else
+				SDL_WINDOWEVENT_ENTER
+#endif
+				:
+					CaughtMouse = 1;
+					break;
+				case
+#if SDL_MAJOR_VERSION >= 3
+				SDL_EVENT_WINDOW_MOUSE_LEAVE
+#else
+				SDL_WINDOWEVENT_LEAVE
+#endif
+				:
+					CaughtMouse = 0;
+					break;
+#if SDL_MAJOR_VERSION <= 2
+			}
+			break;
+#endif
 #if 0
 		case Expose: /* SDL doesn't have an expose event */
 			int x0 = event->expose.x;
@@ -3706,8 +3886,20 @@ LOCALFUNC blnr Screen_Init(void)
 	InitKeyCodes();
 
 #if 0 != SDL_MAJOR_VERSION
-	if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
-	{
+	if (
+#if SDL_MAJOR_VERSION >= 3
+	!
+#endif
+	SDL_Init(
+		SDL_INIT_AUDIO
+		| SDL_INIT_VIDEO
+#if SDL_MAJOR_VERSION <= 2
+		| SDL_INIT_TIMER
+	) < 0
+#elif SDL_MAJOR_VERSION >= 3
+	)
+#endif
+	) {
 		fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
 	} else
 #endif
@@ -3732,10 +3924,11 @@ LOCALPROC GrabTheMachine(void)
 #if GrabKeysFullScreen
 #if 1 == SDL_MAJOR_VERSION
 	(void) SDL_WM_GrabInput(SDL_GRAB_ON);
-#elif 2 == SDL_MAJOR_VERSION
+#elif SDL_MAJOR_VERSION <= 2
 	SDL_SetWindowGrab(my_main_wind, SDL_TRUE);
+#elif SDL_MAJOR_VERSION >= 3
+	SDL_SetWindowMouseGrab(my_main_wind, true);
 #endif /* SDL_MAJOR_VERSION */
-#endif
 
 #if EnableFSMouseMotion
 
@@ -3751,7 +3944,7 @@ LOCALPROC GrabTheMachine(void)
 		SavedMouseV = ViewVStart + (ViewVSize / 2);
 		HaveMouseMotion = trueblnr;
 	}
-#elif 2 == SDL_MAJOR_VERSION
+#elif SDL_MAJOR_VERSION >= 2
 	if (0 == SDL_SetRelativeMouseMode(SDL_ENABLE)) {
 		HaveMouseMotion = trueblnr;
 	}
@@ -3769,7 +3962,7 @@ LOCALPROC UngrabMachine(void)
 	if (HaveMouseMotion) {
 #if HaveWorkingWarp
 		(void) MyMoveMouse(CurMouseH, CurMouseV);
-#elif 2 == SDL_MAJOR_VERSION
+#elif SDL_MAJOR_VERSION >= 2
 		SDL_SetRelativeMouseMode(SDL_DISABLE);
 #endif
 
@@ -3781,9 +3974,11 @@ LOCALPROC UngrabMachine(void)
 #if GrabKeysFullScreen
 #if 1 == SDL_MAJOR_VERSION
 	(void) SDL_WM_GrabInput(SDL_GRAB_OFF);
-#elif 2 == SDL_MAJOR_VERSION
+#elif SDL_MAJOR_VERSION <= 2
 	SDL_SetWindowGrab(my_main_wind, SDL_FALSE);
-#endif
+#elif SDL_MAJOR_VERSION >= 3
+	SDL_SetWindowMouseGrab(my_main_wind, false);
+#endif /* SDL_MAJOR_VERSION */
 #endif
 }
 #endif
@@ -3884,7 +4079,11 @@ LOCALFUNC blnr CreateMainWindow(void)
 #endif
 #if MayFullScreen
 	{
+#if SDL_MAJOR_VERSION > = 3
+		SDL_SetWindowFullscreen(my_main_wind, true);
+#else
 		flags |= SDL_FULLSCREEN;
+#endif
 	}
 #endif
 
@@ -3946,7 +4145,7 @@ LOCALFUNC blnr ReCreateMainWindow(void)
 }
 #endif
 
-#elif 2 == SDL_MAJOR_VERSION
+#elif SDL_MAJOR_VERSION >= 2
 
 enum {
 	kMagStateNormal,
@@ -3979,8 +4178,10 @@ LOCALFUNC blnr CreateMainWindow(void)
 		UseFullScreen.
 	*/
 
+#if SDL_MAJOR_VERSION <= 2
 	int NewWindowX;
 	int NewWindowY;
+#endif
 	int NewWindowHeight = vMacScreenHeight;
 	int NewWindowWidth = vMacScreenWidth;
 	Uint32 flags = 0 /* SDL_WINDOW_HIDDEN */;
@@ -3998,6 +4199,7 @@ LOCALFUNC blnr CreateMainWindow(void)
 #endif
 #if MayFullScreen
 	{
+#if SDL_MAJOR_VERSION <= 2
 		/*
 			We don't want physical screen mode to be changed in modern
 			displays, so we pass this _DESKTOP flag.
@@ -4006,6 +4208,7 @@ LOCALFUNC blnr CreateMainWindow(void)
 
 		NewWindowX = SDL_WINDOWPOS_UNDEFINED;
 		NewWindowY = SDL_WINDOWPOS_UNDEFINED;
+#endif
 	}
 #endif
 #if VarFullScreen
@@ -4023,7 +4226,7 @@ LOCALFUNC blnr CreateMainWindow(void)
 		{
 			WinIndx = kMagStateNormal;
 		}
-
+#if SDL_MAJOR_VERSION <= 2
 		if (! HavePositionWins[WinIndx]) {
 			NewWindowX = SDL_WINDOWPOS_CENTERED;
 			NewWindowY = SDL_WINDOWPOS_CENTERED;
@@ -4031,6 +4234,7 @@ LOCALFUNC blnr CreateMainWindow(void)
 			NewWindowX = WinPositionsX[WinIndx];
 			NewWindowY = WinPositionsY[WinIndx];
 		}
+#endif
 
 		CurWinIndx = WinIndx;
 	}
@@ -4042,7 +4246,9 @@ LOCALFUNC blnr CreateMainWindow(void)
 
 	if (NULL == (my_main_wind = SDL_CreateWindow(
 		(NULL != n_arg) ? n_arg : kStrAppName,
+#if SDL_MAJOR_VERSION <= 2
 		NewWindowX, NewWindowY,
+#endif
 		NewWindowWidth, NewWindowHeight,
 		flags)))
 	{
@@ -4050,7 +4256,11 @@ LOCALFUNC blnr CreateMainWindow(void)
 			SDL_GetError());
 	} else
 	if (NULL == (my_renderer = SDL_CreateRenderer(
-		my_main_wind, -1,
+		my_main_wind,
+#if SDL_MAJOR_VERSION >= 3
+		NULL
+#else
+		-1,
 		0 /* SDL_RENDERER_ACCELERATED|SDL_RENDERER_PRESENTVSYNC */
 			/*
 				SDL_RENDERER_ACCELERATED not needed
@@ -4058,6 +4268,7 @@ LOCALFUNC blnr CreateMainWindow(void)
 				SDL_RENDERER_ACCELERATED renderers"
 			*/
 			/* would rather not require vsync */
+#endif
 		)))
 	{
 		fprintf(stderr, "SDL_CreateRenderer fails: %s\n",
@@ -4077,7 +4288,17 @@ LOCALFUNC blnr CreateMainWindow(void)
 		fprintf(stderr, "SDL_CreateTexture fails: %s\n",
 			SDL_GetError());
 	} else
-	if (NULL == (my_format = SDL_AllocFormat(SDL_PIXELFORMAT_ARGB8888)))
+	if (
+		NULL == (
+			my_format =
+#if SDL_MAJOR_VERSION >= 3
+			SDL_GetPixelFormatDetails
+#else
+			SDL_AllocFormat
+#endif
+			(SDL_PIXELFORMAT_ARGB8888)
+		)
+	)
 	{
 		fprintf(stderr, "SDL_AllocFormat fails: %s\n",
 			SDL_GetError());
@@ -4106,7 +4327,13 @@ LOCALFUNC blnr CreateMainWindow(void)
 			int wr;
 			int hr;
 
-			SDL_GL_GetDrawableSize(my_main_wind, &wr, &hr);
+#if SDL_MAJOR_VERSION >= 3
+			SDL_SetWindowFullscreen(my_main_wind, true);
+			SDL_GetWindowSizeInPixels
+#else
+			SDL_GL_GetDrawableSize
+#endif
+			(my_main_wind, &wr, &hr);
 
 			ViewHSize = wr;
 			ViewVSize = hr;
@@ -4148,7 +4375,6 @@ LOCALFUNC blnr CreateMainWindow(void)
 
 		v = trueblnr;
 	}
-
 	return v;
 }
 
@@ -4160,7 +4386,9 @@ LOCALPROC CloseMainWindow(void)
 	*/
 
 	if (NULL != my_format) {
+#if SDL_MAJOR_VERSION <= 2
 		SDL_FreeFormat(my_format);
+#endif
 		my_format = NULL;
 	}
 
@@ -4212,7 +4440,12 @@ struct MyWState {
 	SDL_Window *f_my_main_wind;
 	SDL_Renderer *f_my_renderer;
 	SDL_Texture *f_my_texture;
-	SDL_PixelFormat *f_my_format;
+#if SDL_MAJOR_VERSION >= 3
+	const SDL_PixelFormatDetails
+#else
+	SDL_PixelFormat
+#endif
+	*f_my_format;
 };
 typedef struct MyWState MyWState;
 #endif
@@ -4386,7 +4619,7 @@ LOCALFUNC blnr ReCreateMainWindow(void)
 
 LOCALPROC ZapWinStateVars(void)
 {
-#if 2 == SDL_MAJOR_VERSION
+#if SDL_MAJOR_VERSION >= 2
 #if MayNotFullScreen
 	{
 		int i;
@@ -4405,7 +4638,7 @@ LOCALPROC ZapWinStateVars(void)
 		}
 	}
 #endif
-#endif /* 2 == SDL_MAJOR_VERSION */
+#endif /* SDL_MAJOR_VERSION >= 2 */
 }
 
 #if VarFullScreen
@@ -4413,7 +4646,7 @@ LOCALPROC ToggleWantFullScreen(void)
 {
 	WantFullScreen = ! WantFullScreen;
 
-#if EnableMagnify && (2 == SDL_MAJOR_VERSION)
+#if EnableMagnify && (SDL_MAJOR_VERSION >= 2)
 	{
 		int OldWinState =
 			UseFullScreen ? kWinStateFullScreen : kWinStateWindowed;
@@ -4581,7 +4814,13 @@ LOCALPROC CheckForSavedTasks(void)
 		&& ! (gTrueBackgroundFlag || CurSpeedStopped)))
 	{
 		HaveCursorHidden = ! HaveCursorHidden;
-#if 0 != SDL_MAJOR_VERSION
+#if SDL_MAJOR_VERSION >= 3
+		if (HaveCursorHidden) {
+			SDL_HideCursor();
+		} else {
+			SDL_ShowCursor();
+		}
+#elif 0 != SDL_MAJOR_VERSION
 		(void) SDL_ShowCursor(
 			HaveCursorHidden ? SDL_DISABLE : SDL_ENABLE);
 #endif
@@ -4826,7 +5065,7 @@ LOCALPROC UnallocMyMemory(void)
 #if CanGetAppPath
 LOCALFUNC blnr InitWhereAmI(void)
 {
-	app_parent = SDL_GetBasePath();
+	app_parent = (char *)SDL_GetBasePath();
 
 	pref_dir = SDL_GetPrefPath("gryphel", "minivmac");
 
@@ -4839,7 +5078,9 @@ LOCALPROC UninitWhereAmI(void)
 {
 	SDL_free(pref_dir);
 
+#if SDL_MAJOR_VERSION <= 2
 	SDL_free(app_parent);
+#endif
 }
 #endif
 
@@ -4861,10 +5102,10 @@ LOCALFUNC blnr InitOSGLU(void)
 	if (LoadMacRom())
 	if (LoadInitialImages())
 	if (InitLocationDat())
+	if (Screen_Init()) /* This needs to run first so the audio subsystem is initialized when it tries to initialize the sound */
 #if MySoundEnabled
 	if (MySound_Init())
 #endif
-	if (Screen_Init())
 	if (CreateMainWindow())
 	if (WaitForRom())
 	{
@@ -4913,6 +5154,10 @@ LOCALPROC UnInitOSGLU(void)
 	CheckSavedMacMsg();
 
 	CloseMainWindow();
+
+#if SDL_MAJOR_VERSION >= 3
+	SDL_QuitSubSystem(SDL_INIT_AUDIO | SDL_INIT_VIDEO);
+#endif
 
 #if 0 != SDL_MAJOR_VERSION
 	SDL_Quit();
