@@ -516,6 +516,7 @@ GLOBALFUNC ui5b ASC_Access(ui5b Data, blnr WriteMem, CPTR addr)
 	= {approx} (x - kCenterSound) / (8 - SoundVolume) + kCenterSound;
 */
 
+#if MySoundEnabled
 LOCALVAR const ui4b vol_mult[] = {
 	8192, 9362, 10922, 13107, 16384, 21845, 32768
 };
@@ -529,6 +530,7 @@ LOCALVAR const trSoundSamp vol_offset[] = {
 #error "unsupported kLn2SoundSampSz"
 #endif
 };
+#endif /* MySoundEnabled */
 
 LOCALVAR const ui3r SubTick_n[kNumSubTicks] = {
 	23,  23,  23,  23,  23,  23,  23,  24,
