@@ -24,7 +24,7 @@ fi
         -chr 0 -drc 1 -sss 4 \
         -fullscreen 0 \
         -var-fullscreen 1 \
-        -api sd2 \
+        -api sd3 \
         > setup.sh
 
 # generate makefile and build
