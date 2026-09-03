@@ -86,15 +86,15 @@ LOCALPROC WriteCommonCNFUIALLContents(void)
 				WriteDestFileLn("#endif");
 				break;
 			case gbk_cpufam_ppc:
-				WriteDestFileLn("#ifdef __powerpc__");
+				WriteDestFileLn("#ifdef __powerpc64__");
 				WriteDestFileLn("#error \"source is configured for"
-					" 32 bit compiler\"");
+					" 64 bit compiler\"");
 				WriteDestFileLn("#endif");
 				break;
 			case gbk_cpufam_p64:
 				WriteDestFileLn("#ifndef __powerpc64__");
 				WriteDestFileLn("#error \"source is configured for"
-					" 64 bit compiler\"");
+					" 32 bit compiler\"");
 				WriteDestFileLn("#endif");
 				break;
 		}
