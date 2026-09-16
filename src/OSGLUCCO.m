@@ -848,8 +848,13 @@ GLOBALOSGLUFUNC tMacErr vSonyGetSize(tDrive Drive_No, ui5r *Sony_Count)
 
 	if (0 == fseek(refnum, 0, SEEK_END)) {
 		v = ftell(refnum);
-		if (v >= 0) {
-			*Sony_Count = v;
+		/*
+			ui5r is 32 bits, so an image of 4 GiB or more would be
+			reported at its size modulo 2^32. Refuse it instead of
+			mounting a disk of the wrong size.
+		*/
+		if ((v >= 0) && (v == (long)(ui5r)v)) {
+			*Sony_Count = (ui5r)v;
 			err = mnvm_noErr;
 		}
 	}
