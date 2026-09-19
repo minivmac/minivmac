@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 		puts(ok ? "Disabled vmnet backend passed" : "Disabled backend failed");
 		return ok ? 0 : 1;
 	}
-	if (!DaynaHostGetMAC(mac)) { DaynaHostUninit(); return 77; }
+	if (!DaynaHostSharedIsReady() || !DaynaHostGetMAC(mac)) { DaynaHostUninit(); return 77; }
 	/* ARP request from the reserved static guest address to the gateway. */
 	memset(arp, 0xff, 6);
 	memcpy(arp + 6, mac, 6);

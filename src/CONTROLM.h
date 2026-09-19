@@ -916,11 +916,16 @@ LOCALPROC DrawDaynaStatus(void)
 	char s[64];
 
 	DaynaHostGetStats(mac, &sent, &received, &dropped);
-	sprintf(s, "MAC %02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2],
+	snprintf(s, sizeof(s), "MAC %02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2],
 		mac[3], mac[4], mac[5]);
 	DrawCellsOneLineStr(s);
-	DrawCellsOneLineStr("Guest 192.168.64.200 via 192.168.64.1");
-	sprintf(s, "Frames tx %lu  rx %lu  drop %lu", sent, received, dropped);
+	DrawCellsOneLineStr("Suggested MacTCP: 192.168.64.200/24");
+	DrawCellsOneLineStr("Router 192.168.64.1");
+	snprintf(s, sizeof(s), "Frames sent %lu", sent);
+	DrawCellsOneLineStr(s);
+	snprintf(s, sizeof(s), "Frames received %lu", received);
+	DrawCellsOneLineStr(s);
+	snprintf(s, sizeof(s), "Invalid/oversize receive drops %lu", dropped);
 	DrawCellsOneLineStr(s);
 }
 #endif
@@ -991,7 +996,7 @@ LOCALPROC DrawCellsControlModeBody(void)
 			break;
 		case kCntrlMsgDaynaDisabled:
 			DrawCellsOneLineStr("DaynaPORT shared networking is disabled.");
-			DrawCellsOneLineStr("Restart the guest before enabling it again.");
+			DrawCellsOneLineStr("Enable with E, then restart the guest.");
 			break;
 		case kCntrlMsgDaynaUnavailable:
 			DrawCellsOneLineStr("DaynaPORT networking is unavailable.");

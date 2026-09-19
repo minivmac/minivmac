@@ -19,14 +19,16 @@ Requires Apple's Command Line Tools and an Apple Silicon Mac:
 ```sh
 sh build_daynaport.sh
 sh tests/run_daynaport.sh
+sh tests/run_vmnet_backend.sh
 sh run_daynaport.sh
 ```
 
 The build option is `-daynaport`, currently restricted to
 `-t mcar -m Plus -api cco`. Omit it for the original SCSI implementation.
 The build script regenerates the usual `cfg/`, `bld/`, Makefile and
-`minivmac.app` outputs. The host connection is enabled only when the
-environment variable is `shared`; unset it or use `off` to disable it.
+`minivmac.app` outputs. To connect at startup, set `MINIVMAC_DAYNAPORT=shared`;
+unset it or use `off` to start with the host link disabled. Control Mode can
+also enable and disable the host link at runtime.
 
 Put your Mac Plus ROM (`vMac.ROM`) and System 7 startup disk in the usual
 Mini vMac locations. Disk images still use Mini vMac's existing disk
@@ -38,9 +40,10 @@ use vmnet without root. Startup logs report errors and leave the host link
 unavailable if the backend cannot start. The SCSI target still presents a
 stable local MAC so the guest extension can load and report a link-down
 adapter. `run_daynaport.sh` is the normal launcher for this experimental build. It
-uses `sudo -n` and therefore requires either a passwordless-sudo rule for the
-user or a signed application carrying the vmnet entitlement. To launch the
-binary manually instead:
+uses `sudo -n`, so sudo authorization must already be available (for example,
+a cached credential or an applicable NOPASSWD rule). An entitled build can be
+launched directly with `MINIVMAC_DAYNAPORT=shared`, without this sudo wrapper.
+To launch an unsigned binary with a normal sudo password prompt instead:
 
 ```sh
 sudo env MINIVMAC_DAYNAPORT=shared ./minivmac.app/Contents/MacOS/minivmac
@@ -51,6 +54,18 @@ A privileged networking helper is a follow-up before routine use.
 This implementation does not install a helper or request Wi-Fi
 credentials; vmnet creates and manages the shared network.
 The configured subnet must not conflict with another network on the host.
+
+## Control Mode
+
+Hold Control and press `N` for adapter status, `E` to enable shared networking,
+or `D` to disable it. Enabling requires the same vmnet privilege as startup.
+After enabling or re-enabling, restart the guest so its driver reads the new
+vmnet-assigned MAC address.
+
+Status shows the adapter MAC, suggested MacTCP address and router, successful
+host send/receive counts, and invalid or oversized receive frames discarded by
+the backend. It cannot read or change the guest's MacTCP settings. Counters
+reset with each new shared interface; they do not measure all packet loss.
 
 ## Guest setup
 
@@ -106,6 +121,12 @@ inquiry, short allocations, sense, both transfer paths, empty and maximum
 packet reads, FCS, framed multi-packet writes, invalid sizes, backend
 failure, reset during transfer, and malformed register traffic.
 
+`sh tests/run_vmnet_backend.sh` tests the production macOS backend under
+ASan and UBSan with substituted vmnet calls and real dispatch/XPC. No ROM or
+privilege is needed. It covers failed and timed-out starts, late completion
+after disable/re-enable, repeated enable/disable, packet padding, receive
+bounds, counters, and a rejected stop request.
+
 An optional backend-only smoke test needs no ROM:
 
 ```sh
@@ -115,7 +136,7 @@ cc -Wall -Wextra -Werror -fblocks -Isrc tests/vmnet_smoke.m \
 sudo ./bld/vmnet-smoke --shared
 ```
 
-The first invocation checks that a disabled backend stays absent. The
+The first invocation checks that a disabled host link stays inactive. The
 second opens a real shared interface and checks a gateway ARP round trip;
 exit 77 means the interface could not start. Neither test proves guest
 driver compatibility or end-to-end Internet access.
@@ -126,8 +147,9 @@ Before proposing this upstream, run the following matrix on a clean checkout:
    `sh build_daynaport.sh`. The DaynaPORT script forces a complete rebuild so
    configuration-specific SCSI objects cannot be reused from the ordinary
    build.
-2. Run `sh tests/run_daynaport.sh`; this uses ASan and UBSan against the
-   production SCSI target with a deterministic fake Ethernet backend.
+2. Run `sh tests/run_daynaport.sh` and `sh tests/run_vmnet_backend.sh`;
+   these use ASan and UBSan against the production SCSI target and host backend
+   with deterministic substitutes for their external dependencies.
 3. Build `tests/vmnet_smoke.m`, run it with networking disabled, and run its
    `--shared` form with the required vmnet privilege. Preserve its gateway-ARP
    output as a host-side artifact.
