@@ -70,6 +70,10 @@ static void DoOSGLUdepends(tDoOneDepends p)
 	p(kDepDirCnfg, "STRCONST.h");
 	p(kDepDirCSrc, "INTLCHAR.h");
 	p(kDepDirCSrc, "COMOSGLU.h");
+	if (WantDaynaPort) {
+		p(kDepDirCSrc, "DAYNAAPI.h");
+		p(kDepDirCSrc, "NETVMNET.h");
+	}
 	if (WantLocalTalk) {
 		{
 			char *s = nullpr;
@@ -111,6 +115,15 @@ static void DoOSGLUdepends(tDoOneDepends p)
 			}
 		}
 		p(kDepDirCnfg, "SOUNDGLU.h");
+	}
+}
+
+static void DoSCSIdepends(tDoOneDepends p)
+{
+	if (WantDaynaPort) {
+		p(kDepDirCSrc, "DAYNAAPI.h");
+		p(kDepDirCSrc, "DAYNAPRT.h");
+		p(kDepDirCSrc, "SCSIDNPT.h");
 	}
 }
 
@@ -287,7 +300,11 @@ static void DoAllSrcFiles(tDoOneCFile p)
 	p("HPMCHACK", kDepDirCSrc,
 		CSrcFlagsUseHdrIf(gbk_AHM_none != cur_AltHappyMac), nullpr);
 	p("ROMEMDEV", kDepDirCSrc, kCSrcFlgmNone, DoROMEMDEVdepends);
-	p("SCSIEMDV", kDepDirCSrc, kCSrcFlgmNone, nullpr);
+	p("DAYNAAPI", kDepDirCSrc, CSrcFlagsUseHdrIf(WantDaynaPort), nullpr);
+	p("DAYNAPRT", kDepDirCSrc, CSrcFlagsUseHdrIf(WantDaynaPort), nullpr);
+	p("SCSIDNPT", kDepDirCSrc, CSrcFlagsUseHdrIf(WantDaynaPort), nullpr);
+	p("NETVMNET", kDepDirCSrc, CSrcFlagsUseHdrIf(WantDaynaPort), nullpr);
+	p("SCSIEMDV", kDepDirCSrc, kCSrcFlgmNone, DoSCSIdepends);
 	p("SONYEMDV", kDepDirCSrc, kCSrcFlgmNone, nullpr);
 	p("SCRNEMDV", kDepDirCSrc, kCSrcFlgmNone, nullpr);
 	p("VIDEMDEV", kDepDirCSrc, CSrcFlagsUseIfA(EmVidCard), nullpr);

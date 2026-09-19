@@ -324,6 +324,7 @@ static void DoAllFrameWorks(tWriteOneFrameWorkType p)
 	if (gbk_apifam_cco == gbo_apifam) {
 		p("AppKit");
 		p("AudioUnit");
+		if (WantDaynaPort) p("vmnet");
 #if UseOpenGLinOSX
 		p("OpenGL");
 #endif

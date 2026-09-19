@@ -519,6 +519,12 @@ enum {
 #endif
 	kCntrlMsgAbout,
 	kCntrlMsgHelp,
+#if EmDaynaPort
+	kCntrlMsgDaynaStatus,
+	kCntrlMsgDaynaEnabled,
+	kCntrlMsgDaynaDisabled,
+	kCntrlMsgDaynaUnavailable,
+#endif
 #if IncludePbufs
 	kCntrlMsgOptionsStrCopied,
 #endif
@@ -685,6 +691,20 @@ LOCALPROC DoControlModeKey(ui3r key)
 				case MKC_H:
 					ControlMessage = kCntrlMsgHelp;
 					break;
+#if EmDaynaPort
+				case MKC_N:
+					ControlMessage = DaynaHostSharedIsReady()
+						? kCntrlMsgDaynaStatus : kCntrlMsgDaynaUnavailable;
+					break;
+				case MKC_E:
+					ControlMessage = DaynaHostEnableShared()
+						? kCntrlMsgDaynaEnabled : kCntrlMsgDaynaUnavailable;
+					break;
+				case MKC_D:
+					DaynaHostDisable();
+					ControlMessage = kCntrlMsgDaynaDisabled;
+					break;
+#endif
 #if NeedRequestInsertDisk
 				case MKC_O:
 					RequestInsertDisk = trueblnr;
@@ -887,6 +907,24 @@ LOCALFUNC char * ControlMode2TitleStr(void)
 	return s;
 }
 
+/* DaynaPORT state is supplied by the macOS host backend. */
+#if EmDaynaPort
+LOCALPROC DrawDaynaStatus(void)
+{
+	uint8_t mac[6];
+	unsigned long sent, received, dropped;
+	char s[64];
+
+	DaynaHostGetStats(mac, &sent, &received, &dropped);
+	sprintf(s, "MAC %02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2],
+		mac[3], mac[4], mac[5]);
+	DrawCellsOneLineStr(s);
+	DrawCellsOneLineStr("Guest 192.168.64.200 via 192.168.64.1");
+	sprintf(s, "Frames tx %lu  rx %lu  drop %lu", sent, received, dropped);
+	DrawCellsOneLineStr(s);
+}
+#endif
+
 LOCALPROC DrawCellsControlModeBody(void)
 {
 	switch (ControlMessage) {
@@ -919,6 +957,11 @@ LOCALPROC DrawCellsControlModeBody(void)
 #endif
 			DrawCellsKeyCommand("Q", kStrCmdQuit);
 			DrawCellsKeyCommand("S", kStrCmdSpeedControl);
+#if EmDaynaPort
+			DrawCellsKeyCommand("N", "DaynaPORT status");
+			DrawCellsKeyCommand("E", "Enable DaynaPORT network");
+			DrawCellsKeyCommand("D", "Disable DaynaPORT network");
+#endif
 #if EnableMagnify
 			DrawCellsKeyCommand("M", kStrCmdMagnifyToggle);
 #endif
@@ -937,6 +980,24 @@ LOCALPROC DrawCellsControlModeBody(void)
 			DrawCellsKeyCommand("P", kStrCmdCopyOptions);
 			DrawCellsKeyCommand("H", kStrCmdHelp);
 			break;
+#if EmDaynaPort
+		case kCntrlMsgDaynaStatus:
+			DrawCellsOneLineStr("DaynaPORT shared networking is active.");
+			DrawDaynaStatus();
+			break;
+		case kCntrlMsgDaynaEnabled:
+			DrawCellsOneLineStr("DaynaPORT shared networking is enabled.");
+			DrawCellsOneLineStr("Restart the guest to use the adapter.");
+			break;
+		case kCntrlMsgDaynaDisabled:
+			DrawCellsOneLineStr("DaynaPORT shared networking is disabled.");
+			DrawCellsOneLineStr("Restart the guest before enabling it again.");
+			break;
+		case kCntrlMsgDaynaUnavailable:
+			DrawCellsOneLineStr("DaynaPORT networking is unavailable.");
+			DrawCellsOneLineStr("Start with vmnet privilege, then try E.");
+			break;
+#endif
 		case kCntrlMsgSpeedControlStart:
 			DrawCellsOneLineStr(kStrCurrentSpeed);
 			DrawCellsKeyCommand("Z", "1x");

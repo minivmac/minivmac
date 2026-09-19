@@ -1450,6 +1450,37 @@ LOCALPROC WrtOptItnlKyBdFix(void)
 }
 
 
+/* option: experimental DaynaPORT SCSI/Link emulation */
+
+LOCALVAR blnr WantDaynaPort;
+LOCALVAR ui3r olv_DaynaPort;
+
+LOCALPROC ResetDaynaPort(void)
+{
+	WantDaynaPort = falseblnr;
+	olv_DaynaPort = 0;
+}
+
+LOCALFUNC tMyErr TryAsDaynaPortNot(void)
+{
+	return FlagTryAsOptionNot("-daynaport", &WantDaynaPort, &olv_DaynaPort);
+}
+
+LOCALFUNC tMyErr ChooseDaynaPort(void)
+{
+	if (WantDaynaPort && ((gbk_apifam_cco != gbo_apifam)
+		|| (cur_mdl != gbk_mdl_Plus)
+		|| (cur_targ != gbk_targ_mcar))) {
+		return ReportParseFailure("-daynaport currently requires -m Plus -t mcar -api cco");
+	}
+	return kMyErr_noErr;
+}
+
+LOCALPROC WrtOptDaynaPort(void)
+{
+	WrtOptFlagOption("-daynaport", WantDaynaPort);
+}
+
 /* option: LocalTalk emulation */
 
 LOCALVAR blnr WantLocalTalk;
@@ -3653,6 +3684,9 @@ LOCALFUNC tMyErr ChooseSandbox(void)
 		WantSandbox = dfo_Sandbox();
 	} else {
 		if (WantSandbox) {
+			if (WantDaynaPort) {
+				err = ReportParseFailure("-daynaport does not yet support -sbx");
+			} else
 			if (gbk_apifam_cco != gbo_apifam) {
 				err = ReportParseFailure("-sbx"
 					" is so far only implemented for cocoa on OS X");
@@ -3885,6 +3919,7 @@ LOCALPROC SPResetCommandLineParameters(void)
 	ResetAltKeysMode();
 	ResetItnlKyBdFixOption();
 	ResetLocalTalk();
+	ResetDaynaPort();
 	ResetLTOOption();
 	ResetInitSpeedOption();
 	ResetInitBackground();
@@ -3957,6 +3992,7 @@ LOCALFUNC tMyErr TryAsSPOptionNot(void)
 	if (kMyErrNoMatch == (err = TryAsAltKeysModeNot()))
 	if (kMyErrNoMatch == (err = TryAsItnlKyBdFixNot()))
 	if (kMyErrNoMatch == (err = TryAsLocalTalkNot()))
+	if (kMyErrNoMatch == (err = TryAsDaynaPortNot()))
 	if (kMyErrNoMatch == (err = TryAsLTOOptionNot()))
 	if (kMyErrNoMatch == (err = TryAsInitSpeedOptionNot()))
 	if (kMyErrNoMatch == (err = TryAsInitBackgroundNot()))
@@ -4033,6 +4069,7 @@ LOCALFUNC tMyErr AutoChooseSPSettings(void)
 	if (kMyErr_noErr == (err = ChooseAltKeysMode()))
 	if (kMyErr_noErr == (err = ChooseItnlKyBdFix()))
 	if (kMyErr_noErr == (err = ChooseLocalTalk()))
+	if (kMyErr_noErr == (err = ChooseDaynaPort()))
 	if (kMyErr_noErr == (err = ChooseLTOOption()))
 	if (kMyErr_noErr == (err = ChooseInitSpeed()))
 	if (kMyErr_noErr == (err = ChooseInitBackground()))
@@ -4115,6 +4152,7 @@ LOCALPROC WrtOptSPSettings(void)
 	WrtOptAltKeysMode();
 	WrtOptItnlKyBdFix();
 	WrtOptLocalTalk();
+	WrtOptDaynaPort();
 	WrtOptLTOOption();
 	WrtOptInitSpeedOption();
 	WrtOptInitBackground();

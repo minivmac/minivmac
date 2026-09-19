@@ -1483,7 +1483,11 @@ GLOBALFUNC ui5b MMDV_Access(ATTep p, ui5b Data,
 						"access SCSI nonstandard address");
 				}
 #endif
-				Data = SCSI_Access(Data, WriteMem, (addr >> 4) & 0x07);
+				Data = SCSI_Access(Data, WriteMem, ((addr >> 4) & 0x07)
+#if EmDaynaPort
+					| ((addr & 0x200) ? 8 : 0)
+#endif
+					);
 			}
 
 			break;

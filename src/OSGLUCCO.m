@@ -29,6 +29,10 @@
 
 #ifdef WantOSGLUCCO
 
+#if EmDaynaPort
+#include "NETVMNET.h"
+#endif
+
 /* --- adapting to API/ABI version differences --- */
 
 
@@ -5234,6 +5238,9 @@ LOCALFUNC blnr InitOSGLU(void)
 #endif
 	if (WaitForRom())
 	{
+#if EmDaynaPort
+		DaynaHostInit();
+#endif
 		IsOk = trueblnr;
 	}
 
@@ -5249,6 +5256,10 @@ IMPORTPROC DumpRTC(void);
 LOCALPROC UnInitOSGLU(void)
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+#if EmDaynaPort
+	DaynaHostUninit();
+#endif
 
 #if dbglog_HAVE && 0
 	DumpRTC();
