@@ -27,7 +27,7 @@ EXPORTPROC MINEM68K_ReserveAlloc(void);
 #endif
 
 EXPORTPROC m68k_IPLchangeNtfy(void);
-EXPORTPROC DiskInsertedPsuedoException(CPTR newpc, ui5b data);
+EXPORTPROC DiskInsertedPseudoException(CPTR newpc, ui5b data);
 EXPORTPROC m68k_reset(void);
 
 EXPORTFUNC si5r GetCyclesRemaining(void);

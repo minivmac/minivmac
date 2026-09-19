@@ -346,7 +346,7 @@ LOCALFUNC tMacErr NativeTextToMacRomanPbuf(char *x, tPbuf *r)
 		ui3p p;
 		ui5b L = strlen(x);
 
-		p = (ui3p)malloc(L);
+		p = (ui3p)malloc((0 == L) ? 1 : L);
 		if (NULL == p) {
 			return mnvm_miscErr;
 		} else {
@@ -525,7 +525,7 @@ GLOBALOSGLUFUNC tMacErr vSonyGetSize(tDrive Drive_No, ui5r *Sony_Count)
 
 	if (0 == fseek(refnum, 0, SEEK_END)) {
 		v = ftell(refnum);
-		if (v >= 0) {
+		if ((v >= 0) && ((ui5r)v == v)) {
 			*Sony_Count = v;
 			err = mnvm_noErr;
 		}

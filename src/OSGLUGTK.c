@@ -153,28 +153,43 @@ GLOBALOSGLUFUNC tMacErr vSonyTransfer(blnr IsWrite, ui3p Buffer,
 	tDrive Drive_No, ui5r Sony_Start, ui5r Sony_Count,
 	ui5r *Sony_ActCount)
 {
-	ui5r NewSony_Count = Sony_Count;
+	tMacErr err = mnvm_miscErr;
+	ui5r NewSony_Count = 0;
+	FILE *refnum = Drives[Drive_No];
 
-	fseek(Drives[Drive_No], Sony_Start, SEEK_SET);
+	if (0 == fseek(refnum, Sony_Start, SEEK_SET)) {
+		if (IsWrite) {
+			NewSony_Count = fwrite(Buffer, 1, Sony_Count, refnum);
+		} else {
+			NewSony_Count = fread(Buffer, 1, Sony_Count, refnum);
+		}
 
-	if (IsWrite) {
-		fwrite(Buffer, 1, NewSony_Count, Drives[Drive_No]);
-	} else {
-		fread(Buffer, 1, NewSony_Count, Drives[Drive_No]);
+		if (NewSony_Count == Sony_Count) {
+			err = mnvm_noErr;
+		}
 	}
 
 	if (nullpr != Sony_ActCount) {
 		*Sony_ActCount = NewSony_Count;
 	}
 
-	return mnvm_noErr; /*& figure out what really to return &*/
+	return err;
 }
 
 GLOBALOSGLUFUNC tMacErr vSonyGetSize(tDrive Drive_No, ui5r *Sony_Count)
 {
-	fseek(Drives[Drive_No], 0, SEEK_END);
-	*Sony_Count = ftell(Drives[Drive_No]);
-	return mnvm_noErr; /*& figure out what really to return &*/
+	tMacErr err = mnvm_miscErr;
+	long v;
+
+	if (0 == fseek(Drives[Drive_No], 0, SEEK_END)) {
+		v = ftell(Drives[Drive_No]);
+		if ((v >= 0) && ((ui5r)v == v)) {
+			*Sony_Count = v;
+			err = mnvm_noErr;
+		}
+	}
+
+	return err;
 }
 
 LOCALFUNC tMacErr vSonyEject0(tDrive Drive_No, blnr deleteit)

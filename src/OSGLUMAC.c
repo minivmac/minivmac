@@ -2535,7 +2535,7 @@ GLOBALOSGLUFUNC tMacErr PbufNew(ui5b count, tPbuf *r)
 	Handle h;
 	tMacErr err = mnvm_miscErr;
 
-	h = NewHandleClear(count);
+	h = NewHandleClear((0 == count) ? 1 : count);
 	if (h != NULL) {
 		err = PbufNewFromHandle(h, count, r);
 	}

@@ -196,7 +196,7 @@ GLOBALOSGLUFUNC tMacErr vSonyGetSize(tDrive Drive_No, ui5r *Sony_Count)
 
 	if (0 == fseek(refnum, 0, SEEK_END)) {
 		v = ftell(refnum);
-		if (v >= 0) {
+		if ((v >= 0) && ((ui5r)v == v)) {
 			*Sony_Count = v;
 			err = mnvm_noErr;
 		}

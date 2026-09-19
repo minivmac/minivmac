@@ -8805,7 +8805,7 @@ GLOBALPROC SetHeadATTel(ATTep p)
 	Em_Exit();
 }
 
-GLOBALPROC DiskInsertedPsuedoException(CPTR newpc, ui5b data)
+GLOBALPROC DiskInsertedPseudoException(CPTR newpc, ui5b data)
 {
 	Em_Enter();
 	ExceptionTo(newpc

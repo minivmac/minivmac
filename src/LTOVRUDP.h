@@ -77,7 +77,24 @@ LOCALVAR blnr udp_ok = falseblnr;
 LOCALVAR blnr have_winsock = falseblnr;
 #endif
 
-LOCALPROC start_udp(void)
+LOCALPROC stop_udp(void)
+{
+	if (my_INVALID_SOCKET != sock_fd) {
+		(void)my_closesocket(sock_fd);
+		sock_fd = my_INVALID_SOCKET;
+	}
+
+	udp_ok = falseblnr;
+
+#if use_winsock
+	if (have_winsock) {
+		(void)WSACleanup();
+		have_winsock = falseblnr;
+	}
+#endif
+}
+
+LOCALFUNC blnr start_udp(void)
 {
 #if use_winsock
 	WSADATA wsaData;
@@ -91,7 +108,7 @@ LOCALPROC start_udp(void)
 #if UDP_dolog
 		dbglog_writeln("WSAStartup fails");
 #endif
-		return;
+		return falseblnr;
 	}
 	have_winsock = trueblnr;
 #endif
@@ -102,7 +119,7 @@ LOCALPROC start_udp(void)
 #if UDP_dolog
 		dbglog_writeSockErr("socket");
 #endif
-		return;
+		goto label_failure;
 	}
 
 	if (0 != setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR,
@@ -111,7 +128,7 @@ LOCALPROC start_udp(void)
 #if UDP_dolog
 		dbglog_writeSockErr("setsockopt SO_REUSEADDR");
 #endif
-		return;
+		goto label_failure;
 	}
 
 #if use_SO_REUSEPORT
@@ -121,7 +138,7 @@ LOCALPROC start_udp(void)
 #if UDP_dolog
 		dbglog_writeSockErr("setsockopt SO_REUSEPORT");
 #endif
-		return;
+		goto label_failure;
 	}
 	/*
 		https://stackoverflow.com/questions/14388706/
@@ -145,7 +162,7 @@ LOCALPROC start_udp(void)
 #if UDP_dolog
 		dbglog_writeSockErr("bind");
 #endif
-		return;
+		goto label_failure;
 	}
 
 	/* whack it on a multicast group */
@@ -158,6 +175,7 @@ LOCALPROC start_udp(void)
 #if UDP_dolog
 		dbglog_writeSockErr("setsockopt IP_ADD_MEMBERSHIP");
 #endif
+		goto label_failure;
 	}
 
 	/* non-blocking I/O is good for the soul */
@@ -168,16 +186,21 @@ LOCALPROC start_udp(void)
 
 		iResult = ioctlsocket(sock_fd, FIONBIO, &iMode);
 		if (iResult != NO_ERROR) {
-			/*
-				printf("ioctlsocket failed with error: %ld\n", iResult);
-			*/
+			goto label_failure;
 		}
 	}
 #else
-	fcntl(sock_fd, F_SETFL, O_NONBLOCK);
+	if (-1 == fcntl(sock_fd, F_SETFL, O_NONBLOCK)) {
+		goto label_failure;
+	}
 #endif
 
 	udp_ok = trueblnr;
+	return trueblnr;
+
+label_failure:
+	stop_udp();
+	return falseblnr;
 }
 
 LOCALVAR unsigned char *MyRxBuffer = NULL;
@@ -198,8 +221,9 @@ LOCALFUNC blnr InitLocalTalk(void)
 		return falseblnr;
 	}
 
-	/* Set up UDP socket */
-	start_udp();
+	/* Set up UDP socket. Networking may be unavailable without
+	   preventing the emulator itself from starting. */
+	(void)start_udp();
 
 	/* Initialized properly */
 	return trueblnr;
@@ -207,26 +231,11 @@ LOCALFUNC blnr InitLocalTalk(void)
 
 LOCALPROC UnInitLocalTalk(void)
 {
-	if (my_INVALID_SOCKET != sock_fd) {
-		if (0 != my_closesocket(sock_fd)) {
-#if UDP_dolog
-			dbglog_writeSockErr("my_closesocket sock_fd");
-#endif
-		}
-	}
-
-#if use_winsock
-	if (have_winsock) {
-		if (0 != WSACleanup()) {
-#if UDP_dolog
-			dbglog_writeSockErr("WSACleanup");
-#endif
-		}
-	}
-#endif
+	stop_udp();
 
 	if (NULL != MyRxBuffer) {
 		free(MyRxBuffer);
+		MyRxBuffer = NULL;
 	}
 }
 
@@ -332,7 +341,9 @@ LOCALFUNC int ipInPacketIsMine(void)
 
 	int foundAddress = 0;
 
-	getifaddrs(&iflist);
+	if (0 != getifaddrs(&iflist)) {
+		return 0;
+	}
 	for (ifptr = iflist; ifptr; ifptr = ifptr->ifa_next) {
 		/* if there is no address in this slot, skip it and move on */
 		if (! ifptr->ifa_addr) {
@@ -390,7 +401,13 @@ LOCALFUNC int GetNextPacket(void)
 #if ! use_winsock
 	errno = 0;
 #endif
-	int bytes = recvfrom(sock_fd, (void *)device_buffer,
+	int bytes;
+
+	if (! udp_ok) {
+		return -1;
+	}
+
+	bytes = recvfrom(sock_fd, (void *)device_buffer,
 		rx_buffer_allocation, 0,
 		(struct sockaddr*)&MyRxAddress, &addrlen);
 	if (bytes < 0) {
@@ -432,7 +449,9 @@ GLOBALOSGLUPROC LT_ReceivePacket(void)
 label_retry:
 #endif
 	bytes = GetNextPacket();
-	if (bytes > 0) {
+	/* The transport stamp is four bytes and the SCC immediately reads
+	   the three-byte LLAP header from the payload. */
+	if (bytes >= 7) {
 #if LT_MayHaveEcho
 		CertainlyNotMyPacket = ! pidInPacketIsMine();
 #endif

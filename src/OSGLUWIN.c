@@ -298,7 +298,8 @@ GLOBALOSGLUFUNC tMacErr PbufNew(ui5b count, tPbuf *r)
 	HGLOBAL h;
 	tMacErr err = mnvm_miscErr;
 
-	h = GlobalAlloc(GMEM_DDESHARE | GMEM_ZEROINIT, count);
+	h = GlobalAlloc(GMEM_DDESHARE | GMEM_ZEROINIT,
+		(0 == count) ? 1 : count);
 	if (h != NULL) {
 		/* need to clear h */
 		err = PbufNewFromHandle(h, count, r);
@@ -4273,9 +4274,13 @@ GLOBALOSGLUFUNC tMacErr vSonyGetSize(tDrive Drive_No, ui5r *Sony_Count)
 {
 	tMacErr result;
 	DWORD L;
+	DWORD High = 0;
 
-	L = GetFileSize(Drives[Drive_No], nullpr);
-	if (L == 0xFFFFFFFF) {
+	SetLastError(NO_ERROR);
+	L = GetFileSize(Drives[Drive_No], &High);
+	if ((High != 0) || ((L == INVALID_FILE_SIZE)
+		&& (GetLastError() != NO_ERROR)))
+	{
 		result = mnvm_miscErr; /*& figure out what really to return &*/
 	} else {
 		*Sony_Count = L;
@@ -4823,10 +4828,10 @@ LOCALPROC InsertADisk0(void)
 	ofn.lpstrFilter = szFilter;
 	ofn.nFilterIndex = 2;
 	ofn.lpstrFile= szFile;
-	ofn.nMaxFile = sizeof(szFile);
+	ofn.nMaxFile = sizeof(szFile) / sizeof(szFile[0]);
 #if ! UseWinCE
 	ofn.lpstrFileTitle = szFileTitle;
-	ofn.nMaxFileTitle = sizeof(szFileTitle);
+	ofn.nMaxFileTitle = sizeof(szFileTitle) / sizeof(szFileTitle[0]);
 #endif
 	ofn.lpstrInitialDir = szDirName;
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST
