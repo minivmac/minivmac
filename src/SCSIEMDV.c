@@ -29,6 +29,10 @@
 
 #include "SCSIEMDV.h"
 
+#if EmDaynaPort
+#include "SCSIDNPT.h"
+#else
+
 #define scsiRd   0x00
 #define scsiWr   0x01
 
@@ -147,3 +151,4 @@ GLOBALFUNC ui5b SCSI_Access(ui5b Data, blnr WriteMem, CPTR addr)
 	}
 	return Data;
 }
+#endif /* EmDaynaPort */

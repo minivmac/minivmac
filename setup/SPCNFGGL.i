@@ -103,6 +103,7 @@ LOCALPROC WriteAppSpecificCNFUDALLoptions(void)
 
 	WriteDestFileLn("#define EnableAutoSlow 1");
 	WriteCompCondBool("EmLocalTalk", WantLocalTalk);
+	WriteCompCondBool("EmDaynaPort", WantDaynaPort);
 	if (WantLocalTalk) {
 		WriteDestFileLn("#define LT_MayHaveEcho 1");
 	}

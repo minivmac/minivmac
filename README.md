@@ -15,6 +15,13 @@ The [recently discovered](https://web.archive.org/web/20250518175439/https://www
 	./setuptool -n "minivmac-37.03-kanji" \  
 	  -m Kanji -t mcar -lt -lto udp -sgn 0 > setup.sh
 
+## Experimental DaynaPORT networking
+
+An optional Apple Silicon / Macintosh Plus build emulates a DaynaPORT
+SCSI/Link adapter using macOS shared networking. See
+[build instructions, guest setup, tests and current limits](docs/daynaport.md).
+The original DaynaPORT SCSI/Link driver and MacTCP have been verified in a Mac Plus/System 7 guest.
+
 ## Contributing
 
 If you find any bugs and/or implement new features, please feel free to create a pull request. I will be more than happy to merge in any changes of general interest to keep Mini vMac alive and thriving.
@@ -25,4 +32,3 @@ If you find any bugs and/or implement new features, please feel free to create a
 [Mirror of main development website as of 05/25/22](https://minivmac.github.io/gryphel-mirror/index.html)
 
 [State of affairs](https://www.emaculation.com/forum/viewtopic.php?t=11570)
-
