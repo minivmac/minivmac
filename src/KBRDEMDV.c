@@ -42,7 +42,7 @@ IMPORTFUNC ui3b KYBD_ShiftInData(void);
 enum {
 	kKybdStateIdle,
 	kKybdStateRecievingCommand,
-	kKybdStateRecievedCommand,
+	kKybdStateReceivedCommand,
 	kKybdStateRecievingEndCommand,
 
 	kKybdStates
@@ -110,7 +110,7 @@ GLOBALPROC DoKybd_ReceiveCommand(void)
 	} else {
 		ui3b in = KYBD_ShiftInData();
 
-		KybdState = kKybdStateRecievedCommand;
+		KybdState = kKybdStateReceivedCommand;
 
 		switch (in) {
 			case 0x10 : /* Inquiry Command */
@@ -182,7 +182,7 @@ GLOBALPROC Kybd_DataLineChngNtfy(void)
 				}
 			}
 			break;
-		case kKybdStateRecievedCommand:
+		case kKybdStateReceivedCommand:
 			if (VIA1_iCB2 == 1) {
 				KybdState = kKybdStateRecievingEndCommand;
 #ifdef _VIA_Debug

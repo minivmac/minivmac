@@ -1017,7 +1017,13 @@ GLOBALOSGLUFUNC tMacErr vSonyGetSize(tDrive Drive_No, ui5r *Sony_Count)
 	SInt64 forkSize;
 	tMacErr err = To_tMacErr(
 		FSGetForkSize(Drives[Drive_No], &forkSize));
-	*Sony_Count = forkSize;
+	if ((mnvm_noErr == err) && (forkSize >= 0)
+		&& ((ui5r)forkSize == forkSize))
+	{
+		*Sony_Count = forkSize;
+	} else {
+		err = mnvm_miscErr;
+	}
 	return err;
 }
 

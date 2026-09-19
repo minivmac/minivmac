@@ -147,7 +147,7 @@ LOCALFUNC tMacErr NativeTextToMacRomanPbuf(char *x, tPbuf *r) {
 		ui3p p;
 		ui5b L = strlen(x);
 
-		p = (ui3p)malloc(L);
+		p = (ui3p)malloc((0 == L) ? 1 : L);
 		if (NULL == p) {
 			return mnvm_miscErr;
 		} else {
@@ -307,7 +307,7 @@ GLOBALOSGLUFUNC tMacErr vSonyGetSize(tDrive Drive_No, ui5r *Sony_Count) {
 
 	if (0 == fseek(refnum, 0, SEEK_END)) {
 		v = ftell(refnum);
-		if (v >= 0) {
+		if ((v >= 0) && ((ui5r)v == v)) {
 			*Sony_Count = v;
 			err = mnvm_noErr;
 		}
@@ -316,7 +316,7 @@ GLOBALOSGLUFUNC tMacErr vSonyGetSize(tDrive Drive_No, ui5r *Sony_Count) {
 	return err; /*& figure out what really to return &*/
 }
 
-LOCALFUNC tMacErr vSonyEjeccurrentPixel(tDrive Drive_No, blnr deleteit) {
+LOCALFUNC tMacErr vSonyEject0(tDrive Drive_No, blnr deleteit) {
 	FILE *refnum = Drives[Drive_No];
 
 	DiskEjectedNotify(Drive_No);
@@ -341,12 +341,12 @@ LOCALFUNC tMacErr vSonyEjeccurrentPixel(tDrive Drive_No, blnr deleteit) {
 }
 
 GLOBALOSGLUFUNC tMacErr vSonyEject(tDrive Drive_No) {
-	return vSonyEjeccurrentPixel(Drive_No, falseblnr);
+	return vSonyEject0(Drive_No, falseblnr);
 }
 
 #if IncludeSonyNew
 GLOBALOSGLUFUNC tMacErr vSonyEjectDelete(tDrive Drive_No) {
-	return vSonyEjeccurrentPixel(Drive_No, trueblnr);
+	return vSonyEject0(Drive_No, trueblnr);
 }
 #endif
 
@@ -377,7 +377,7 @@ GLOBALOSGLUFUNC tMacErr vSonyGetName(tDrive Drive_No, tPbuf *r) {
 }
 #endif
 
-LOCALFUNC blnr Sony_InsercurrentPixel(FILE *refnum, blnr locked,
+LOCALFUNC blnr Sony_Insert0(FILE *refnum, blnr locked,
 	char *drivepath) {
 	tDrive Drive_No;
 	blnr IsOk = falseblnr;
@@ -386,7 +386,7 @@ LOCALFUNC blnr Sony_InsercurrentPixel(FILE *refnum, blnr locked,
 		MacMsg(kStrTooManyImagesTitle, kStrTooManyImagesMessage,
 			falseblnr);
 	} else {
-		/* printf("Sony_InsercurrentPixel %d\n", (int)Drive_No); */
+		/* printf("Sony_Insert0 %d\n", (int)Drive_No); */
 
 		{
 			Drives[Drive_No] = refnum;
@@ -427,7 +427,7 @@ LOCALFUNC blnr Sony_Insert1(char *drivepath, blnr silentfail) {
 			MacMsg(kStrOpenFailTitle, kStrOpenFailMessage, falseblnr);
 		}
 	} else {
-		return Sony_InsercurrentPixel(refnum, locked, drivepath);
+		return Sony_Insert0(refnum, locked, drivepath);
 	}
 
 	return falseblnr;
@@ -488,7 +488,7 @@ LOCALPROC MakeNewDisk(ui5b L, char *drivepath) {
 		MacMsg(kStrOpenFailTitle, kStrOpenFailMessage, falseblnr);
 	} else {
 		if (WriteZero(refnum, L)) {
-			IsOk = Sony_InsercurrentPixel(refnum, falseblnr, drivepath);
+			IsOk = Sony_Insert0(refnum, falseblnr, drivepath);
 			refnum = NULL;
 		}
 		if (refnum != NULL) {

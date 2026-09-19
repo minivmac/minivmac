@@ -1,5 +1,5 @@
 /*
-	HPMCHACK.c
+	HPMCHACK.h
 
 	Copyright (C) 2016 Steve Chamberlin, Paul C. Pratt
 

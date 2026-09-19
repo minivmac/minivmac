@@ -99,9 +99,12 @@ LOCALFUNC int get_ethernet(void)
 {
 	int result;
 	int size;
-	struct rt_msghdr* message;
+	struct rt_msghdr* message = NULL;
 	struct sockaddr_in* addrs;
 	struct sockaddr* sa_list[RTAX_MAX];
+	struct sockaddr* sa;
+	struct sockaddr_dl* link;
+	int namelen;
 	int loop;
 	char filename[64];
 	struct ifreq ifreq;
@@ -109,21 +112,21 @@ LOCALFUNC int get_ethernet(void)
 	struct kinfo_proc kp;
 	size_t len = sizeof(kp);
 	int max = 4;
+	int v = falseblnr;
 
 	char device[32];
 
 	/* Get a socket to routed for IPv4 */
 	fd = socket(PF_ROUTE, SOCK_RAW, AF_INET);
 	if (fd == -1) {
-		return falseblnr;
+		goto label_exit;
 	}
 
 	/* Allocate a message */
 	size = sizeof(struct rt_msghdr) + 16 * sizeof(struct sockaddr_in);
 	message = (struct rt_msghdr*)malloc(size);
 	if (! message) {
-		close(fd);
-		return falseblnr;
+		goto label_exit;
 	}
 	memset(message, 0, size);
 	addrs = (struct sockaddr_in*)(message + 1);
@@ -141,24 +144,23 @@ LOCALFUNC int get_ethernet(void)
 	/* Send the message to the kernel */
 	result = write(fd, message, size);
 	if (result < 0) {
-		close(fd);
-		free(message);
-		return falseblnr;
+		goto label_exit;
 	}
 
 	/* Read the result from the kernel */
 	result = read(fd, message, size);
-	if (result < 0) {
-		close(fd);
-		free(message);
-		return falseblnr;
+	if ((result < (int)sizeof(struct rt_msghdr))
+		|| (message->rtm_msglen > result))
+	{
+		goto label_exit;
 	}
 
-	/* Close the route socket */
+	/* fd is shared with the BPF device opened below. */
 	close(fd);
+	fd = -1;
 
 	/* Get pointer to the result then parse it */
-	struct sockaddr* sa = (struct sockaddr*)
+	sa = (struct sockaddr*)
 		((unsigned long int)message + sizeof(struct rt_msghdr));
 	get_sockaddrs(message->rtm_addrs, sa, sa_list);
 
@@ -166,28 +168,23 @@ LOCALFUNC int get_ethernet(void)
 	if ((! sa_list[RTAX_IFP])
 		|| (sa_list[RTAX_IFP]->sa_family != AF_LINK))
 	{
-		return falseblnr;
+		goto label_exit;
 	}
 
-	int namelen = ((struct sockaddr_dl*)sa_list[RTAX_IFP])->sdl_nlen;
-#if 0
-	int addrlen = ((struct sockaddr_dl*)sa_list[RTAX_IFP])->sdl_alen;
-#endif
+	link = (struct sockaddr_dl*)sa_list[RTAX_IFP];
+	namelen = link->sdl_nlen;
+	if ((namelen >= (int)sizeof(device)) || (link->sdl_alen < 6)) {
+		goto label_exit;
+	}
 
-	strncpy(device,
-		&((struct sockaddr_dl*)sa_list[RTAX_IFP])->sdl_data[0],
-		namelen);
+	strncpy(device, &link->sdl_data[0], namelen);
 	device[namelen] = 0;
-	memcpy(device_address,
-		&((struct sockaddr_dl*)sa_list[RTAX_IFP])->sdl_data[namelen],
-		6);
-	memcpy(&(tx_buffer[6]),
-		&((struct sockaddr_dl*)sa_list[RTAX_IFP])->sdl_data[namelen],
-		6);
+	memcpy(device_address, &link->sdl_data[namelen], 6);
+	memcpy(&(tx_buffer[6]), &link->sdl_data[namelen], 6);
 
 	result = sysctlbyname("debug.bpf_maxdevices", &kp, &len, NULL, 0);
 	if (result == -1) {
-		return falseblnr;
+		goto label_exit;
 	}
 	max = *((int *)&kp);
 
@@ -200,45 +197,45 @@ LOCALFUNC int get_ethernet(void)
 		}
 	}
 
-	if (fd <= 0) {
-		return falseblnr;
+	if (fd < 0) {
+		goto label_exit;
 	}
 
 	memset(&ifreq, 0, sizeof(struct ifreq));
 	strncpy(ifreq.ifr_name, device, IFNAMSIZ);
 	result = ioctl(fd, BIOCSETIF, &ifreq);
 	if (result) {
-		return falseblnr;
+		goto label_exit;
 	}
 
 	result = ioctl(fd, BIOCGBLEN, &device_buffer_size);
 	if (result) {
-		return falseblnr;
+		goto label_exit;
 	}
 
 	result = ioctl(fd, BIOCPROMISC, &enable);
 	if (result) {
-		return falseblnr;
+		goto label_exit;
 	}
 
 	result = ioctl(fd, BIOCSSEESENT, &enable);
 	if (result) {
-		return falseblnr;
+		goto label_exit;
 	}
 
 	result = ioctl(fd, BIOCSHDRCMPLT, &enable);
 	if (result) {
-		return falseblnr;
+		goto label_exit;
 	}
 
 	result = ioctl(fd, BIOCIMMEDIATE, &enable);
 	if (result) {
-		return falseblnr;
+		goto label_exit;
 	}
 
 	result = ioctl(fd, BIOCVERSION, &bpf_version);
 	if (result) {
-		return falseblnr;
+		goto label_exit;
 	}
 
 	bpf_program.bf_len = 4;
@@ -246,10 +243,21 @@ LOCALFUNC int get_ethernet(void)
 
 	result = ioctl(fd, BIOCSETF, &bpf_program);
 	if (result) {
-		return falseblnr;
+		goto label_exit;
 	}
 
-	return trueblnr;
+	v = trueblnr;
+
+label_exit:
+	if (NULL != message) {
+		free(message);
+	}
+	if ((! v) && (fd >= 0)) {
+		close(fd);
+		fd = -1;
+	}
+
+	return v;
 }
 
 LOCALVAR unsigned char *MyRxBuffer = NULL;
@@ -260,8 +268,9 @@ LOCALVAR unsigned char *MyRxBuffer = NULL;
 */
 LOCALFUNC int InitLocalTalk(void)
 {
-	/* Perform a lot of stuff to get access to the Ethernet */
-	get_ethernet();
+	/* Failure to access BPF should leave LocalTalk inert, not prevent
+	   the emulator from starting. */
+	(void)get_ethernet();
 
 	LT_PickStampNodeHint();
 
@@ -274,9 +283,11 @@ LOCALFUNC int InitLocalTalk(void)
 
 	LT_TxBuffer = (ui3p)&tx_buffer[20];
 
-	MyRxBuffer = malloc(device_buffer_size);
-	if (NULL == MyRxBuffer) {
-		return falseblnr;
+	if (0 != device_buffer_size) {
+		MyRxBuffer = malloc(device_buffer_size);
+		if (NULL == MyRxBuffer) {
+			return falseblnr;
+		}
 	}
 
 	/* Initialized properly */
@@ -287,6 +298,11 @@ LOCALPROC UnInitLocalTalk(void)
 {
 	if (NULL != MyRxBuffer) {
 		free(MyRxBuffer);
+		MyRxBuffer = NULL;
+	}
+	if (fd >= 0) {
+		close(fd);
+		fd = -1;
 	}
 }
 
@@ -303,6 +319,9 @@ GLOBALOSGLUPROC LT_TransmitPacket(void)
 	*((uint16_t*)(&tx_buffer[18])) = htons(LT_TxBuffSz);
 
 	/* Send the packet to Ethernet */
+	if (fd < 0) {
+		return;
+	}
 	count = write(fd, tx_buffer, 20 + LT_TxBuffSz);
 
 	(void)count; /* unused */
@@ -315,7 +334,13 @@ LOCALPROC LocalTalkTick0(void)
 {
 	/* Get a single buffer worth of packets from BPF */
 	unsigned char* device_buffer = MyRxBuffer;
-	int bytes = read(fd, device_buffer, device_buffer_size);
+	int bytes;
+
+	if ((fd < 0) || (NULL == device_buffer)) {
+		return;
+	}
+
+	bytes = read(fd, device_buffer, device_buffer_size);
 	if (bytes > 0) {
 		/* Maybe multiple packets in this buffer */
 #if 0
@@ -342,20 +367,43 @@ label_retry:
 		goto label_retry;
 	} else {
 		unsigned char* packet = NextPacket;
+		unsigned int packet_size;
+		int payload_length;
+		int llap_length;
+		unsigned char *buff;
+		unsigned char* start;
 		/* Get pointer to BPF header */
 		struct bpf_hdr* header = (struct bpf_hdr *)packet;
+		if ((unsigned long)(EndPackets - packet) < sizeof(struct bpf_hdr)) {
+			NextPacket = NULL;
+			goto label_retry;
+		}
+		if ((header->bh_hdrlen > (unsigned int)(EndPackets - packet))
+			|| (header->bh_caplen > (unsigned int)(EndPackets - packet)
+				- header->bh_hdrlen))
+		{
+			NextPacket = NULL;
+			goto label_retry;
+		}
+		packet_size = BPF_WORDALIGN(header->bh_hdrlen + header->bh_caplen);
+		if (packet_size > (unsigned int)(EndPackets - packet)) {
+			NextPacket = NULL;
+			goto label_retry;
+		}
 
 		/* Advance to next packet in buffer */
-		NextPacket += BPF_WORDALIGN(header->bh_hdrlen
-			+ header->bh_caplen);
+		NextPacket += packet_size;
 
 		/* Get clean references to data */
-		int ethernet_length = header->bh_caplen - 14;
-		unsigned char *buff = packet + header->bh_hdrlen;
-		int llap_length = ntohs(*((uint16_t*)(buff + 18)));
-		unsigned char* start = buff + 20;
+		payload_length = (int)header->bh_caplen - 20;
+		if (payload_length < 0) {
+			goto label_retry;
+		}
+		buff = packet + header->bh_hdrlen;
+		llap_length = ntohs(*((uint16_t*)(buff + 18)));
+		start = buff + 20;
 
-		if (llap_length <= ethernet_length) {
+		if (llap_length <= payload_length) {
 			/* Start the receiver */
 			CertainlyNotMyPacket = (LT_MyStamp !=
 				ntohl(*((uint32_t*)(buff + 14))));

@@ -58,7 +58,9 @@ GLOBALOSGLUFUNC tMacErr PbufNew(ui5b count, tPbuf *r)
 {
 	tMacErr err = mnvm_miscErr;
 
-	void *p = calloc(1, count);
+	/* calloc(0, ...) is allowed to return NULL, but an empty parameter
+	   buffer is valid and can be requested by the guest. */
+	void *p = calloc(1, (0 == count) ? 1 : count);
 	if (NULL != p) {
 		err = PbufNewFromPtr(p, count, r);
 	}

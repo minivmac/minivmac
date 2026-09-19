@@ -15,14 +15,14 @@
 */
 
 /*
-	Platform Idendependent code COMMON
+	Platform Independent code COMMON
 
-	First include of platform idendependent code files,
+	First include of platform independent code files,
 		containing definitions used by all of them.
 
 	May be worthwhile to create a pre-compiled header from this,
 		if supported by compiler, which can be used for all
-		platform idendependent files of a given Variation.
+		platform independent files of a given Variation.
 */
 
 #ifdef PICOMMON_H
@@ -36,7 +36,7 @@
 #include "CNFUIPIC.h"
 	/*
 		Configuration file independent of user options
-		suitable for platform indendent code.
+		suitable for platform independent code.
 		Usually empty, but if use different compiler for
 		operating system glue, then could define the different compiler
 		configuration here and in CNFUIOSG, instead of CNFUIALL.

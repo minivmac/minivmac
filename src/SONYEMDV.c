@@ -22,7 +22,7 @@
 	code that calls Mini vMac extensions implemented in
 	the file.
 
-	Information neeeded to better support the Disk Copy 4.2
+	Information needed to better support the Disk Copy 4.2
 	format was found in libdc42.c of the Lisa Emulator Project
 	by Ray A. Arachelian, and adapted to Mini vMac
 	by Jesus A. Alvarez.
@@ -338,8 +338,10 @@ LOCALFUNC tMacErr vSonyNextPendingInsert(tDrive *Drive_No)
 						ui5r TagSize0 = do_get_mem_long(
 							&Temp[kDC42offset_tagSize]);
 						ui5r DataOffset0 = kDC42offset_userData;
-						ui5r TagOffset0 = DataOffset0 + DataSize0;
-						if (L >= (TagOffset0 + TagSize0))
+						/* Check each extent before adding untrusted sizes. */
+						if (DataOffset0 <= L)
+						if (DataSize0 <= L - DataOffset0)
+						if (TagSize0 <= L - DataOffset0 - DataSize0)
 						if (0 == (DataSize0 & 0x01FF))
 						if ((DataSize0 >> 9) >= 4)
 						if (Temp[kDC42offset_diskName] < 64)
@@ -355,6 +357,9 @@ LOCALFUNC tMacErr vSonyNextPendingInsert(tDrive *Drive_No)
 								gotFormat = trueblnr;
 							}
 							if (gotFormat) {
+#if Sony_SupportTags || Sony_VerifyChecksums
+								ui5r TagOffset0 = DataOffset0 + DataSize0;
+#endif
 #if Sony_VerifyChecksums /* mostly useful to check the Checksum code */
 								ui5r dataChecksum;
 								ui5r tagChecksum;
@@ -447,10 +452,20 @@ LOCALFUNC tMacErr vSonyNextPendingInsert(tDrive *Drive_No)
 							if (drSigWord == 0x504D) { // HFS partition map magic number.
 								ui3p map = &Temp[512 * i];
 								if (strcmp((char *)(map + 48), "Apple_HFS") == 0) {
-									DataOffset = ((map[8] << 24) | (map[9] << 16) | (map[10] << 8) | map[11]) << 9;
-									DataSize = 512 * ((map[12] << 24) | (map[13] << 16) | (map[14] << 8) | map[15]);
-									gotFormat = trueblnr;
-									break;
+									ui5r StartBlock = do_get_mem_long(map + 8);
+									ui5r BlockCount = do_get_mem_long(map + 12);
+									ui5r FileBlocks = L >> 9;
+
+									/* Validate in blocks before converting to bytes,
+									   avoiding overflow and partitions beyond EOF. */
+									if ((0 != BlockCount) && (StartBlock <= FileBlocks)
+										&& (BlockCount <= FileBlocks - StartBlock))
+									{
+										DataOffset = StartBlock << 9;
+										DataSize = BlockCount << 9;
+										gotFormat = trueblnr;
+										break;
+									}
 								}
 							}
 						}
@@ -511,7 +526,7 @@ GLOBALPROC Sony_Update (void)
 					data |= ((ui5b)0x00FF) << 16;
 				}
 
-				DiskInsertedPsuedoException(MountCallBack, data);
+				DiskInsertedPseudoException(MountCallBack, data);
 
 #if IncludeSonyRawMode
 				if (! vSonyRawMode)

@@ -34,7 +34,7 @@ enum {
 	kPMUStateReadyForCommand,
 	kPMUStateRecievingLength,
 	kPMUStateRecievingBuffer,
-	kPMUStateRecievedCommand,
+	kPMUStateReceivedCommand,
 	kPMUStateSendLength,
 	kPMUStateSendBuffer,
 
@@ -91,7 +91,7 @@ LOCALPROC PmuCheckCommandOp(void)
 					ReportAbnormalID(0x0E03,
 						"Wrong PMU_i for kPMUpramWrite");
 				}
-			} else if (kPMUStateRecievedCommand == PMUState) {
+			} else if (kPMUStateReceivedCommand == PMUState) {
 				/* already done */
 			}
 			break;
@@ -102,7 +102,7 @@ LOCALPROC PmuCheckCommandOp(void)
 		case 0xE0: /* kPMUwritePmgrRAM - write to internal PMGR RAM */
 			break;
 		case 0x21: /* kPMUpMgrADBoff - turn ADB auto-poll off */
-			if (kPMUStateRecievedCommand == PMUState) {
+			if (kPMUStateReceivedCommand == PMUState) {
 				if (0 != PMU_BuffL) {
 					ReportAbnormalID(0x0E04,
 						"kPMUpMgrADBoff nonzero length");
@@ -110,7 +110,7 @@ LOCALPROC PmuCheckCommandOp(void)
 			}
 			break;
 		case 0xEC: /* kPMUPmgrSelfTest - run the PMGR selftest */
-			if (kPMUStateRecievedCommand == PMUState) {
+			if (kPMUStateReceivedCommand == PMUState) {
 				PmuStartSendResult(0, 0);
 			}
 			break;
@@ -124,13 +124,13 @@ LOCALPROC PmuCheckCommandOp(void)
 			/*
 				kPMUsleepReq - put the system to sleep (sleepSig='MATT')
 			*/
-			if (kPMUStateRecievedCommand == PMUState) {
+			if (kPMUStateReceivedCommand == PMUState) {
 				PMU_BuffA[0] = 0;
 				PmuStartSendResult(0, 1);
 			}
 			break;
 		case 0xE8: /* kPMUreadPmgrRAM - read from internal PMGR RAM */
-			if (kPMUStateRecievedCommand == PMUState) {
+			if (kPMUStateReceivedCommand == PMUState) {
 				if ((3 == PMU_BuffL)
 					&& (0 == PMU_BuffA[0])
 					&& (0xEE == PMU_BuffA[1])
@@ -146,7 +146,7 @@ LOCALPROC PmuCheckCommandOp(void)
 			}
 			break;
 		case 0x3A: /* kPMUxPramRead - read extended PRAM byte(s) */
-			if (kPMUStateRecievedCommand == PMUState) {
+			if (kPMUStateReceivedCommand == PMUState) {
 				if ((2 == PMU_BuffL)
 					&& (PMU_BuffA[0] + PMU_BuffA[1] <= 0x80))
 				{
@@ -161,7 +161,7 @@ LOCALPROC PmuCheckCommandOp(void)
 			break;
 		case 0x38:
 			/* kPMUtimeRead - read the time from the clock chip */
-			if (kPMUStateRecievedCommand == PMUState) {
+			if (kPMUStateReceivedCommand == PMUState) {
 				if (0 == PMU_BuffL) {
 					PMU_BuffA[0] = 0;
 					PMU_BuffA[1] = 0;
@@ -178,7 +178,7 @@ LOCALPROC PmuCheckCommandOp(void)
 				kPMUpramWrite - write the original 20 bytes of PRAM
 				(Portable only)
 			*/
-			if (kPMUStateRecievedCommand == PMUState) {
+			if (kPMUStateReceivedCommand == PMUState) {
 				if (20 == PMU_BuffL) {
 					/* done */
 				} else {
@@ -205,7 +205,7 @@ LOCALPROC PmuCheckCommandOp(void)
 				kPMUpramRead - read the original 20 bytes of PRAM
 				(Portable only)
 			*/
-			if (kPMUStateRecievedCommand == PMUState) {
+			if (kPMUStateReceivedCommand == PMUState) {
 				if (0 == PMU_BuffL) {
 					PmuStartSendResult(0, 20);
 				} else {
@@ -234,7 +234,7 @@ LOCALPROC PmuCheckCommandOp(void)
 			}
 			break;
 		default:
-			if (kPMUStateRecievedCommand == PMUState) {
+			if (kPMUStateReceivedCommand == PMUState) {
 				ReportAbnormalID(0x0E0B, "Unknown PMU op");
 #if dbglog_HAVE
 				dbglog_writeCStr("Unknown PMU op ");
@@ -316,7 +316,7 @@ LOCALVAR blnr PMU_Sending = falseblnr;
 LOCALPROC PmuCheckCommandCompletion(void)
 {
 	if (PMU_i == PMU_BuffL) {
-		PMUState = kPMUStateRecievedCommand;
+			PMUState = kPMUStateReceivedCommand;
 		PmuCheckCommandOp();
 		if ((PMU_CurCommand & 0x08) == 0) {
 			PMUState = kPMUStateReadyForCommand;
