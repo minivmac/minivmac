@@ -6669,8 +6669,7 @@ LOCALIPROC DoCodeMoveP0(void)
 	ui5r dstreg = V_regs.CurDecOpY.v[1].ArgDat;
 	ui5r *dstp = &V_regs.regs[dstreg];
 
-	ui5r Displacement = nextiword_nm();
-		/* shouldn't this sign extend ? */
+	ui5r Displacement = nextiSWord();
 	CPTR memp = *srcp + Displacement;
 
 	ui4r val = ((get_byte(memp) & 0x00FF) << 8)
@@ -6696,8 +6695,7 @@ LOCALIPROC DoCodeMoveP1(void)
 	ui5r dstreg = V_regs.CurDecOpY.v[1].ArgDat;
 	ui5r *dstp = &V_regs.regs[dstreg];
 
-	ui5r Displacement = nextiword_nm();
-		/* shouldn't this sign extend ? */
+	ui5r Displacement = nextiSWord();
 	CPTR memp = *srcp + Displacement;
 
 	ui5r val = ((get_byte(memp) & 0x00FF) << 24)
@@ -6716,8 +6714,7 @@ LOCALIPROC DoCodeMoveP2(void)
 	ui5r dstreg = V_regs.CurDecOpY.v[1].ArgDat;
 	ui5r *dstp = &V_regs.regs[dstreg];
 
-	ui5r Displacement = nextiword_nm();
-		/* shouldn't this sign extend ? */
+	ui5r Displacement = nextiSWord();
 	CPTR memp = *srcp + Displacement;
 
 	ui4r val = *dstp;
@@ -6734,8 +6731,7 @@ LOCALIPROC DoCodeMoveP3(void)
 	ui5r dstreg = V_regs.CurDecOpY.v[1].ArgDat;
 	ui5r *dstp = &V_regs.regs[dstreg];
 
-	ui5r Displacement = nextiword_nm();
-		/* shouldn't this sign extend ? */
+	ui5r Displacement = nextiSWord();
 	CPTR memp = *srcp + Displacement;
 
 	ui5r val = *dstp;
