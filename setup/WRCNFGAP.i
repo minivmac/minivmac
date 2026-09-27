@@ -47,6 +47,7 @@ LOCALPROC WriteOSXLocalTalkCNFUIOSG(void)
 		}
 	}
 	if ((gbk_lto_udp == gbo_lto) || CurUseAllFiles) {
+		WriteDestFileLn("#include <errno.h>");
 #if 0
 		WriteDestFileLn("#include <ifaddrs.h>");
 #endif
