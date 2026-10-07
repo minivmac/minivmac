@@ -3725,8 +3725,8 @@ LOCALPROC HandleTheEvent(SDL_Event *event)
 					break;
 			}
 			break;
-#endif /* 1 == SDL_MAJOR_VERSION */
-		#if SDL_MAJOR_VERSION <= 2
+#else
+		#if SDL_MAJOR_VERSION == 2
 		case SDL_WINDOWEVENT:
 			switch (event->window.event) {
 		#endif
@@ -3771,10 +3771,11 @@ LOCALPROC HandleTheEvent(SDL_Event *event)
 					SDL_RenderClear(my_renderer);
 					break;
 				#endif
-			#if SDL_MAJOR_VERSION <= 2
+			#if SDL_MAJOR_VERSION == 2
 			}
 			break;
 			#endif
+#endif /* 1 == SDL_MAJOR_VERSION */
 		case
 			#if SDL_MAJOR_VERSION >= 3
 			SDL_EVENT_MOUSE_MOTION
