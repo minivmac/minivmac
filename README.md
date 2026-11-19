@@ -15,6 +15,10 @@ The [recently discovered](https://web.archive.org/web/20250518175439/https://www
 	./setuptool -n "minivmac-37.03-kanji" \  
 	  -m Kanji -t mcar -lt -lto udp -sgn 0 > setup.sh
 
+## Command line options
+
+On ports with command line parsing, `-s <value>` sets the initial speed, using the same names as the setup tool: `a` (all out), `z` (1x), and `1` through `5` (2x through 32x). Any other value uses `z` (1x). The Speed Control screen can still change the speed while running.
+
 ## Contributing
 
 If you find any bugs and/or implement new features, please feel free to create a pull request. I will be more than happy to merge in any changes of general interest to keep Mini vMac alive and thriving.

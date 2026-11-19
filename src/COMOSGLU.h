@@ -89,6 +89,18 @@ GLOBALVAR blnr WantMacReset = falseblnr;
 
 GLOBALVAR ui3b SpeedValue = WantInitSpeedValue;
 
+/* speed name from command line: a, z, 1..5; anything else is 1x */
+LOCALFUNC ui3b SpeedValueFromName(char *s)
+{
+	if ('a' == s[0]) {
+		return ('\0' == s[1]) ? (ui3b) -1 : 0;
+	}
+	if (('1' <= s[0]) && (s[0] <= '5') && ('\0' == s[1])) {
+		return (ui3b)(s[0] - '0');
+	}
+	return 0;
+}
+
 #if EnableAutoSlow
 GLOBALVAR blnr WantNotAutoSlow = (WantInitNotAutoSlow != 0);
 #endif
