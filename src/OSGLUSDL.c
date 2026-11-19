@@ -4981,6 +4981,13 @@ label_retry:
 					goto label_retry;
 				}
 			} else
+			if (0 == strcmp(pa, "-s"))
+			{
+				if (i < my_argc) {
+					SpeedValue = SpeedValueFromName(my_argv[i++]);
+					goto label_retry;
+				}
+			} else
 			if (('p' == pa[1]) && ('s' == pa[2]) && ('n' == pa[3]))
 			{
 				/* seen in OS X. ignore */

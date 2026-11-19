@@ -5270,6 +5270,13 @@ label_retry:
 					goto label_retry;
 				}
 			} else
+			if (0 == strcmp(pa, "-s"))
+			{
+				if (i < my_argc) {
+					SpeedValue = SpeedValueFromName(my_argv[i++]);
+					goto label_retry;
+				}
+			} else
 #ifndef UsingAlsa
 #define UsingAlsa 0
 #endif

@@ -1237,6 +1237,12 @@ LOCALFUNC blnr ScanCommandLine(void)
 					rom_path = my_argv[i];
 				}
 			} else
+			if (0 == strcmp(my_argv[i], "-s")) {
+				++i;
+				if (i < my_argc) {
+					SpeedValue = SpeedValueFromName(my_argv[i]);
+				}
+			} else
 #if 0
 			if (0 == strcmp(my_argv[i], "-l")) {
 				SpeedValue = 0;
